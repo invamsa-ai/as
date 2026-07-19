@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>فيديو خلفية تفاعلي - Scrolly Video</title>
+    <title>فيديو تفاعلي - لقطات كل 1.5 ثانية</title>
+    
     <!-- مكتبة scrolly-video -->
     <script src="https://cdn.jsdelivr.net/npm/scrolly-video@latest/dist/scrolly-video.js"></script>
+    
     <style>
         /* إعادة تعيين */
         * {
@@ -38,7 +40,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: brightness(0.8) saturate(1.1);
+            filter: brightness(0.85) saturate(1.1);
         }
 
         /* طبقة تراكب داكنة */
@@ -48,10 +50,48 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 1;
             pointer-events: none;
             backdrop-filter: blur(1.5px);
+        }
+
+        /* ---- شريط التقدم ---- */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            z-index: 100;
+            width: 0%;
+            transition: width 0.1s;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+        }
+
+        /* ---- رقم اللقطة الحالية ---- */
+        .scene-counter {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scene-counter .number {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #00d2ff;
         }
 
         /* ---- المحتوى فوق الفيديو ---- */
@@ -64,7 +104,7 @@
             width: 100%;
         }
 
-        /* أقسام المحتوى */
+        /* أقسام المحتوى - كل قسم يمثل لقطة */
         .section {
             min-height: 100vh;
             display: flex;
@@ -77,8 +117,10 @@
             background: transparent;
             backdrop-filter: blur(2px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s;
         }
 
+        /* تأثير دخول النصوص مع تأخير */
         .section h2 {
             font-size: clamp(2.4rem, 7vw, 4.6rem);
             font-weight: 700;
@@ -89,20 +131,34 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .section p {
             font-size: 1.3rem;
             max-width: 700px;
             line-height: 1.8;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             padding: 0.8rem 2.2rem;
             border-radius: 60px;
             backdrop-filter: blur(6px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
         }
 
+        /* ظهور النصوص عند وصول المستخدم */
+        .section.active h2,
+        .section.active p {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* مؤشر التمرير */
         .scroll-hint {
             margin-top: 2.5rem;
             font-size: 1rem;
@@ -113,6 +169,12 @@
             border-radius: 60px;
             backdrop-filter: blur(6px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .scroll-hint i {
@@ -123,6 +185,68 @@
         @keyframes bounce-down {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(10px); }
+        }
+
+        /* حالة التوقف - إيقاف التمرير */
+        .status-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: #b8cae0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff88;
+            display: inline-block;
+            animation: blink 1.5s infinite;
+        }
+
+        .status-dot.paused {
+            background: #ff6b6b;
+            animation: none;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* معلومات اللقطة */
+        .scene-info {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            padding: 6px 18px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+            color: #8899bb;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            opacity: 0;
+        }
+
+        .scene-info.visible {
+            opacity: 1;
         }
 
         .footer {
@@ -138,6 +262,7 @@
             width: 100%;
         }
 
+        /* التوافق مع الجوال */
         @media (max-width: 700px) {
             .section p {
                 font-size: 1rem;
@@ -147,10 +272,39 @@
                 font-size: 0.9rem;
                 padding: 0.4rem 1.4rem;
             }
+            .status-indicator {
+                font-size: 0.7rem;
+                padding: 6px 15px;
+                bottom: 15px;
+            }
+            .scene-counter {
+                top: 15px;
+                left: 15px;
+                font-size: 0.7rem;
+                padding: 5px 14px;
+            }
+            .scene-counter .number {
+                font-size: 1rem;
+            }
+            .scene-info {
+                bottom: 70px;
+                font-size: 0.7rem;
+                padding: 4px 14px;
+            }
         }
     </style>
 </head>
 <body>
+
+    <!-- شريط التقدم -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- عداد اللقطات -->
+    <div class="scene-counter">
+        <span>لقطة</span>
+        <span class="number" id="sceneNumber">1</span>
+        <span>/ <span id="totalScenes">8</span></span>
+    </div>
 
     <!-- حاوية فيديو الخلفية -->
     <div id="bg-video-container">
@@ -166,73 +320,335 @@
     <!-- المحتوى -->
     <div class="content">
 
-        <section class="section">
-            <h2>🎬 فيديو خلفية تفاعلي</h2>
-            <p>تمرير للأسفل للتحكم بتقدم الفيديو — باستخدام مكتبة Scrolly Video</p>
+        <!-- اللقطة 1 (0s - 1.5s) -->
+        <section class="section" data-scene="0" data-time="0">
+            <h2>🎬 مقدمة الفيديو</h2>
+            <p>البداية - اللقطة الأولى</p>
             <div class="scroll-hint">⬇️ مرر للأسفل ⬇️</div>
         </section>
 
-        <section class="section">
-            <h2>✨ تحكم سلس</h2>
-            <p>يتقدم الفيديو مع التمرير ويتوقف عند التوقف — تجربة غامرة</p>
-            <div class="scroll-hint" style="margin-top: 2rem;">⬇️ استمر بالتمرير ⬇️</div>
+        <!-- اللقطة 2 (1.5s - 3s) -->
+        <section class="section" data-scene="1" data-time="1.5">
+            <h2>✨ مشهد ديناميكي</h2>
+            <p>الانتقال السلس بين المشاهد</p>
         </section>
 
-        <section class="section">
-            <h2>🌌 مشهد ديناميكي</h2>
-            <p>الفيديو يعمل كخلفية ثابتة، ووقت تشغيله مرتبط بحركة التمرير</p>
+        <!-- اللقطة 3 (3s - 4.5s) -->
+        <section class="section" data-scene="2" data-time="3">
+            <h2>🌌 لقطات سريعة</h2>
+            <p>كل 1.5 ثانية مشهد جديد</p>
         </section>
 
-        <section class="section">
-            <h2>🚀 إمكانيات لا نهائية</h2>
-            <p>يمكنك تغيير الفيديو أو تعديل سرعة التفاعل بسهولة</p>
+        <!-- اللقطة 4 (4.5s - 6s) -->
+        <section class="section" data-scene="3" data-time="4.5">
+            <h2>🎯 تفاعل فوري</h2>
+            <p>التمرير يتحكم بسرعة الفيديو</p>
+        </section>
+
+        <!-- اللقطة 5 (6s - 7.5s) -->
+        <section class="section" data-scene="4" data-time="6">
+            <h2>🚀 إيقاع سريع</h2>
+            <p>مثالي للمونتاج السريع</p>
+        </section>
+
+        <!-- اللقطة 6 (7.5s - 9s) -->
+        <section class="section" data-scene="5" data-time="7.5">
+            <h2>🎨 انتقالات احترافية</h2>
+            <p>تجربة سينمائية</p>
+        </section>
+
+        <!-- اللقطة 7 (9s - 10.5s) -->
+        <section class="section" data-scene="6" data-time="9">
+            <h2>⭐ لقطات مميزة</h2>
+            <p>كل تفاصيل الفيديو تظهر</p>
+        </section>
+
+        <!-- اللقطة 8 (10.5s - 12s) -->
+        <section class="section" data-scene="7" data-time="10.5">
+            <h2>🏁 النهاية</h2>
+            <p>شكراً للمشاهدة!</p>
         </section>
 
         <div class="footer">
-            <span>🔄 تمرير متزامن مع الفيديو — Scrolly Video</span>
+            <span>🔄 لقطات كل 1.5 ثانية — تشغيل تلقائي عند التوقف</span>
         </div>
 
     </div>
 
+    <!-- مؤشر الحالة -->
+    <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">تشغيل تلقائي</span>
+    </div>
+
+    <!-- معلومات اللقطة -->
+    <div class="scene-info" id="sceneInfo">
+        <span id="sceneTime">00:00</span>
+    </div>
+
     <script>
-        // انتظار تحميل الصفحة بالكامل
         document.addEventListener('DOMContentLoaded', function() {
-            // الحصول على عنصر الفيديو
             const video = document.getElementById('bg-video');
+            const progressBar = document.getElementById('progressBar');
+            const sections = document.querySelectorAll('.section');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const sceneNumber = document.getElementById('sceneNumber');
+            const totalScenes = document.getElementById('totalScenes');
+            const sceneInfo = document.getElementById('sceneInfo');
+            const sceneTime = document.getElementById('sceneTime');
             
-            // التأكد من وجود الفيديو
             if (!video) {
                 console.error('عنصر الفيديو غير موجود');
                 return;
             }
 
-            // تهيئة Scrolly Video
+            // ============================================
+            // إعدادات اللقطات (كل 1.5 ثانية)
+            // ============================================
+            const SCENE_DURATION = 1.5; // كل لقطة 1.5 ثانية
+            const totalSceneCount = sections.length;
+            totalScenes.textContent = totalSceneCount;
+
+            // متغيرات للتحكم
+            let isScrolling = false;
+            let scrollTimeout = null;
+            let isVideoPlaying = false;
+            let lastScrollY = window.scrollY;
+            let currentSceneIndex = 0;
+
+            // ============================================
+            // 1. تهيئة Scrolly Video
+            // ============================================
             const scrollyVideo = new ScrollyVideo({
-                scrollyVideoContainer: "bg-video-container", // الحاوية التي تحتوي الفيديو
-                videoElement: video, // عنصر الفيديو نفسه
-                src: "your-video.mp4", // مصدر الفيديو (نفس المصدر الموجود في HTML)
-                // خيارات إضافية
-                scrollContainer: window, // نافذة المتصفح كحاوية تمرير
-                useWebCodecs: false, // تعطيل WebCodecs للتأكد من التوافق (يمكن تفعيله)
-                smoothScroll: true, // تمرير سلس
-                scrollThreshold: 1, // حساسية التمرير
-                // معايرة: يمكن ضبط سرعة التقدم
-                // playbackRate: 2, // سرعة التشغيل
-                // startAt: 0, // نقطة البداية
-                // endAt: 1, // نقطة النهاية
+                scrollyVideoContainer: "bg-video-container",
+                videoElement: video,
+                src: "your-video.mp4",
+                scrollContainer: window,
+                useWebCodecs: false,
+                smoothScroll: true,
+                scrollThreshold: 0.03,    // حساسية عالية جداً
+                playbackRate: 2.5,         // سرعة تمرير سريعة جداً (للانتقال بين اللقطات)
             });
 
-            // بدء تشغيل الفيديو (المكتبة ستتعامل مع التقدم)
-            video.play().catch(() => {
-                console.warn('لا يمكن تشغيل الفيديو تلقائياً');
+            // ============================================
+            // 2. حساب وقت كل لقطة بناءً على مدة الفيديو
+            // ============================================
+            let sceneTimes = [];
+            let videoDuration = 0;
+
+            video.addEventListener('loadedmetadata', function() {
+                videoDuration = video.duration;
+                
+                // توزيع اللقطات بالتساوي كل 1.5 ثانية
+                for (let i = 0; i < totalSceneCount; i++) {
+                    const time = Math.min(i * SCENE_DURATION, videoDuration - 0.1);
+                    sceneTimes.push(time);
+                    
+                    // تحديث وقت كل قسم
+                    if (sections[i]) {
+                        sections[i].dataset.time = time;
+                    }
+                }
+                
+                console.log(`✅ الفيديو جاهز - ${totalSceneCount} لقطة كل ${SCENE_DURATION} ثانية`);
+                console.log(`📊 أوقات اللقطات: ${sceneTimes.join(', ')}`);
+                
+                // بدء التشغيل التلقائي
+                setTimeout(() => {
+                    playVideo();
+                }, 500);
             });
 
-            console.log('✅ تم تهيئة Scrolly Video بنجاح');
+            // ============================================
+            // 3. وظائف التحكم بالفيديو
+            // ============================================
             
-            // يمكنك الوصول إلى دوال إضافية مثل:
-            // scrollyVideo.destroy() لإلغاء التهيئة
-            // scrollyVideo.update({ src: "video2.mp4" }) لتغيير الفيديو
+            function playVideo() {
+                if (!isVideoPlaying && video.paused) {
+                    video.play().then(() => {
+                        isVideoPlaying = true;
+                        statusDot.className = 'status-dot';
+                        statusText.textContent = '▶ تشغيل تلقائي';
+                        console.log('▶ الفيديو يعمل');
+                    }).catch(err => {
+                        console.warn('لا يمكن تشغيل الفيديو:', err);
+                    });
+                }
+            }
+
+            function pauseVideo() {
+                if (isVideoPlaying && !video.paused) {
+                    video.pause();
+                    isVideoPlaying = false;
+                    statusDot.className = 'status-dot paused';
+                    statusText.textContent = '⏸ تمرير';
+                    console.log('⏸ توقف التمرير');
+                }
+            }
+
+            // ============================================
+            // 4. الانتقال إلى لقطة محددة
+            // ============================================
+            
+            function goToScene(index) {
+                if (index < 0) index = 0;
+                if (index >= totalSceneCount) index = totalSceneCount - 1;
+                
+                currentSceneIndex = index;
+                const targetTime = sceneTimes[index] || 0;
+                
+                // تحديث عداد اللقطات
+                sceneNumber.textContent = index + 1;
+                
+                // تحديث وقت العرض
+                const minutes = Math.floor(targetTime / 60);
+                const seconds = Math.floor(targetTime % 60);
+                sceneTime.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                sceneInfo.classList.add('visible');
+                
+                // تحديث شريط التقدم
+                const progress = (targetTime / videoDuration) * 100;
+                progressBar.style.width = Math.min(progress, 100) + '%';
+                
+                // تغيير وقت الفيديو (فقط إذا كان الفيديو متوقفاً)
+                if (!isVideoPlaying || video.paused) {
+                    video.currentTime = targetTime;
+                }
+                
+                // تحديث الأقسام النشطة
+                sections.forEach((section, i) => {
+                    if (i === index) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                
+                console.log(`🎬 الانتقال إلى اللقطة ${index + 1} عند ${targetTime.toFixed(2)} ثانية`);
+            }
+
+            // ============================================
+            // 5. كشف التمرير والتوقف
+            // ============================================
+            
+            window.addEventListener('scroll', function() {
+                const currentScrollY = window.scrollY;
+                
+                // حساب اللقطة بناءً على التمرير
+                const scrollPercent = currentScrollY / (document.documentElement.scrollHeight - window.innerHeight);
+                const sceneIndex = Math.min(Math.floor(scrollPercent * totalSceneCount), totalSceneCount - 1);
+                
+                // إذا تغيرت اللقطة
+                if (sceneIndex !== currentSceneIndex) {
+                    // إيقاف الفيديو مؤقتاً
+                    pauseVideo();
+                    
+                    // الانتقال إلى اللقطة الجديدة
+                    goToScene(sceneIndex);
+                    
+                    // تحديث شريط التقدم
+                    const progress = (currentScrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                    progressBar.style.width = Math.min(progress, 100) + '%';
+                }
+                
+                // إعادة تعيين المؤقت
+                clearTimeout(scrollTimeout);
+                
+                // بعد توقف التمرير بـ 300ms، شغّل الفيديو
+                scrollTimeout = setTimeout(() => {
+                    isScrolling = false;
+                    
+                    // إذا كنا في آخر لقطة، ننتقل إلى التشغيل التلقائي من آخر لقطة
+                    if (currentSceneIndex === totalSceneCount - 1) {
+                        // الاستمرار من آخر لقطة
+                    }
+                    
+                    playVideo();
+                }, 300);
+                
+                lastScrollY = currentScrollY;
+            });
+
+            // ============================================
+            // 6. تحديث اللقطة أثناء التشغيل التلقائي
+            // ============================================
+            
+            video.addEventListener('timeupdate', function() {
+                if (isVideoPlaying && !video.paused) {
+                    const currentTime = video.currentTime;
+                    
+                    // إيجاد اللقطة الحالية بناءً على الوقت
+                    let newIndex = 0;
+                    for (let i = sceneTimes.length - 1; i >= 0; i--) {
+                        if (currentTime >= sceneTimes[i]) {
+                            newIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    // إذا تغيرت اللقطة أثناء التشغيل التلقائي
+                    if (newIndex !== currentSceneIndex) {
+                        goToScene(newIndex);
+                        
+                        // تحديث شريط التقدم
+                        const progress = (currentTime / videoDuration) * 100;
+                        progressBar.style.width = Math.min(progress, 100) + '%';
+                    }
+                    
+                    // تحديث شريط التقدم بشكل مستمر
+                    if (isVideoPlaying) {
+                        const progress = (currentTime / videoDuration) * 100;
+                        progressBar.style.width = Math.min(progress, 100) + '%';
+                    }
+                }
+            });
+
+            // ============================================
+            // 7. عند انتهاء الفيديو
+            // ============================================
+            
+            video.addEventListener('ended', function() {
+                console.log('🏁 انتهى الفيديو');
+                // إعادة التشغيل من البداية
+                if (isVideoPlaying) {
+                    video.currentTime = 0;
+                    video.play();
+                }
+            });
+
+            // ============================================
+            // 8. معالجة تغيير حجم النافذة
+            // ============================================
+            
+            window.addEventListener('resize', function() {
+                // تحديث الموقع
+            });
+
+            // ============================================
+            // 9. معالجة الأخطاء
+            // ============================================
+            
+            video.addEventListener('error', function(e) {
+                console.error('خطأ في الفيديو:', e);
+                statusText.textContent = '⚠ خطأ';
+                statusDot.className = 'status-dot paused';
+            });
+
+            // ============================================
+            // 10. بداية التشغيل
+            // ============================================
+            
+            console.log('✅ تم تهيئة الفيديو التفاعلي - لقطات كل 1.5 ثانية');
+            console.log(`📌 عدد اللقطات: ${totalSceneCount}`);
+            console.log('🔄 تمرير = تنقل بين اللقطات | توقف = تشغيل تلقائي');
+            
+            // بدء التشغيل من اللقطة الأولى
+            setTimeout(() => {
+                goToScene(0);
+            }, 100);
         });
     </script>
+
 </body>
 </html>
