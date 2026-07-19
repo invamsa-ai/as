@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>فيديو خلفية تفاعلي - Scrolly Video</title>
+    <!-- مكتبة scrolly-video -->
+    <script src="https://cdn.jsdelivr.net/npm/scrolly-video@latest/dist/scrolly-video.js"></script>
+    <style>
+        /* إعادة تعيين */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            direction: rtl;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0b0e14;
+            color: #f0f4fa;
+            overflow-x: hidden;
+        }
+
+        /* ----- فيديو الخلفية (ثابت) ----- */
+        #bg-video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            background: #0a0f15;
+        }
+
+        #bg-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.8) saturate(1.1);
+        }
+
+        /* طبقة تراكب داكنة */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            pointer-events: none;
+            backdrop-filter: blur(1.5px);
+        }
+
+        /* ---- المحتوى فوق الفيديو ---- */
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* أقسام المحتوى */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 2rem;
+            text-align: center;
+            width: 100%;
+            background: transparent;
+            backdrop-filter: blur(2px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .section h2 {
+            font-size: clamp(2.4rem, 7vw, 4.6rem);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+            margin-bottom: 1.2rem;
+            background: linear-gradient(135deg, #ffffff 0%, #c0d0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section p {
+            font-size: 1.3rem;
+            max-width: 700px;
+            line-height: 1.8;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.8rem 2.2rem;
+            border-radius: 60px;
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .scroll-hint {
+            margin-top: 2.5rem;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            color: #b8cae0;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scroll-hint i {
+            display: inline-block;
+            animation: bounce-down 2s infinite;
+        }
+
+        @keyframes bounce-down {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        .footer {
+            height: 30vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: #a0b4d0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%;
+        }
+
+        @media (max-width: 700px) {
+            .section p {
+                font-size: 1rem;
+                padding: 0.6rem 1.2rem;
+            }
+            .scroll-hint {
+                font-size: 0.9rem;
+                padding: 0.4rem 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- حاوية فيديو الخلفية -->
+    <div id="bg-video-container">
+        <video id="bg-video" muted playsinline preload="auto">
+            <source src="your-video.mp4" type="video/mp4" />
+            متصفحك لا يدعم فيديو الخلفية.
+        </video>
+    </div>
+
+    <!-- طبقة تراكب -->
+    <div class="overlay"></div>
+
+    <!-- المحتوى -->
+    <div class="content">
+
+        <section class="section">
+            <h2>🎬 فيديو خلفية تفاعلي</h2>
+            <p>تمرير للأسفل للتحكم بتقدم الفيديو — باستخدام مكتبة Scrolly Video</p>
+            <div class="scroll-hint">⬇️ مرر للأسفل ⬇️</div>
+        </section>
+
+        <section class="section">
+            <h2>✨ تحكم سلس</h2>
+            <p>يتقدم الفيديو مع التمرير ويتوقف عند التوقف — تجربة غامرة</p>
+            <div class="scroll-hint" style="margin-top: 2rem;">⬇️ استمر بالتمرير ⬇️</div>
+        </section>
+
+        <section class="section">
+            <h2>🌌 مشهد ديناميكي</h2>
+            <p>الفيديو يعمل كخلفية ثابتة، ووقت تشغيله مرتبط بحركة التمرير</p>
+        </section>
+
+        <section class="section">
+            <h2>🚀 إمكانيات لا نهائية</h2>
+            <p>يمكنك تغيير الفيديو أو تعديل سرعة التفاعل بسهولة</p>
+        </section>
+
+        <div class="footer">
+            <span>🔄 تمرير متزامن مع الفيديو — Scrolly Video</span>
+        </div>
+
+    </div>
+
+    <script>
+        // انتظار تحميل الصفحة بالكامل
+        document.addEventListener('DOMContentLoaded', function() {
+            // الحصول على عنصر الفيديو
+            const video = document.getElementById('bg-video');
+            
+            // التأكد من وجود الفيديو
+            if (!video) {
+                console.error('عنصر الفيديو غير موجود');
+                return;
+            }
+
+            // تهيئة Scrolly Video
+            const scrollyVideo = new ScrollyVideo({
+                scrollyVideoContainer: "bg-video-container", // الحاوية التي تحتوي الفيديو
+                videoElement: video, // عنصر الفيديو نفسه
+                src: "your-video.mp4", // مصدر الفيديو (نفس المصدر الموجود في HTML)
+                // خيارات إضافية
+                scrollContainer: window, // نافذة المتصفح كحاوية تمرير
+                useWebCodecs: false, // تعطيل WebCodecs للتأكد من التوافق (يمكن تفعيله)
+                smoothScroll: true, // تمرير سلس
+                scrollThreshold: 0.1, // حساسية التمرير
+                // معايرة: يمكن ضبط سرعة التقدم
+                // playbackRate: 1, // سرعة التشغيل
+                // startAt: 0, // نقطة البداية
+                // endAt: 1, // نقطة النهاية
+            });
+
+            // بدء تشغيل الفيديو (المكتبة ستتعامل مع التقدم)
+            video.play().catch(() => {
+                console.warn('لا يمكن تشغيل الفيديو تلقائياً');
+            });
+
+            console.log('✅ تم تهيئة Scrolly Video بنجاح');
+            
+            // يمكنك الوصول إلى دوال إضافية مثل:
+            // scrollyVideo.destroy() لإلغاء التهيئة
+            // scrollyVideo.update({ src: "video2.mp4" }) لتغيير الفيديو
+        });
+    </script>
+</body>
+</html>
