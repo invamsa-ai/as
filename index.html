@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>فيديو تفاعلي - تمرير + تشغيل تلقائي</title>
+    <title>فيديو تفاعلي - تشغيل من حيث توقف</title>
     
     <!-- مكتبة scrolly-video -->
     <script src="https://cdn.jsdelivr.net/npm/scrolly-video@latest/dist/scrolly-video.js"></script>
@@ -201,6 +201,30 @@
             50% { opacity: 0.3; }
         }
 
+        /* عرض الوقت الحالي */
+        .time-display {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            padding: 5px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+            color: #8899bb;
+            font-family: monospace;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .time-display.visible {
+            opacity: 1;
+        }
+
         .footer {
             height: 30vh;
             display: flex;
@@ -229,6 +253,11 @@
                 padding: 6px 15px;
                 bottom: 15px;
             }
+            .time-display {
+                bottom: 70px;
+                font-size: 0.7rem;
+                padding: 4px 12px;
+            }
         }
     </style>
 </head>
@@ -254,7 +283,7 @@
         <!-- اللقطة 1 -->
         <section class="section" data-scene="0">
             <h2>🎬 فيديو تفاعلي</h2>
-            <p>تمرير للتحكم بالفيديو — توقف لاستمرار التشغيل</p>
+            <p>تمرير للتحكم بالفيديو — توقف لاستمرار التشغيل من نفس النقطة</p>
             <div class="scroll-hint">⬇️ مرر للأسفل ⬇️</div>
         </section>
 
@@ -267,7 +296,7 @@
         <!-- اللقطة 3 -->
         <section class="section" data-scene="2">
             <h2>🌌 مشاهد ديناميكية</h2>
-            <p>يتوقف التمرير؟ الفيديو يستمر بالتشغيل</p>
+            <p>يتوقف التمرير؟ الفيديو يستمر من حيث توقف</p>
         </section>
 
         <!-- اللقطة 4 -->
@@ -283,7 +312,7 @@
         </section>
 
         <div class="footer">
-            <span>🔄 تمرير + تشغيل تلقائي — Scrolly Video Pro</span>
+            <span>🔄 تمرير + تشغيل من حيث توقف — Scrolly Video Pro</span>
         </div>
 
     </div>
@@ -294,6 +323,11 @@
         <span id="statusText">تشغيل تلقائي</span>
     </div>
 
+    <!-- عرض الوقت -->
+    <div class="time-display" id="timeDisplay">
+        <span id="currentTimeText">00:00</span>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById('bg-video');
@@ -301,17 +335,22 @@
             const sections = document.querySelectorAll('.section');
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
+            const timeDisplay = document.getElementById('timeDisplay');
+            const currentTimeText = document.getElementById('currentTimeText');
             
             if (!video) {
                 console.error('عنصر الفيديو غير موجود');
                 return;
             }
 
-            // متغيرات للتحكم
+            // ============================================
+            // متغيرات التحكم
+            // ============================================
             let isScrolling = false;
             let scrollTimeout = null;
             let isVideoPlaying = false;
-            let lastScrollTime = Date.now();
+            let lastScrollY = window.scrollY;
+            let currentVideoTime = 0; // تخزين وقت الفيديو الحالي
 
             // ============================================
             // 1. تهيئة Scrolly Video للتحكم بالتمرير
@@ -323,79 +362,144 @@
                 scrollContainer: window,
                 useWebCodecs: false,
                 smoothScroll: true,
-                scrollThreshold: 0.05,    // حساسية عالية للتمرير
-                playbackRate: 1.2,         // تسريع طفيف أثناء التمرير
+                scrollThreshold: 0.05,
+                playbackRate: 1.2,
             });
 
             // ============================================
-            // 2. تشغيل الفيديو تلقائياً عند التوقف
+            // 2. وظيفة تحديث عرض الوقت
             // ============================================
-            
-            // وظيفة لتشغيل الفيديو
+            function updateTimeDisplay(time) {
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                currentTimeText.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                timeDisplay.classList.add('visible');
+                
+                // إخفاء بعد 3 ثواني
+                clearTimeout(window.timeDisplayTimeout);
+                window.timeDisplayTimeout = setTimeout(() => {
+                    timeDisplay.classList.remove('visible');
+                }, 3000);
+            }
+
+            // ============================================
+            // 3. تشغيل الفيديو من نفس النقطة
+            // ============================================
             function playVideo() {
                 if (!isVideoPlaying) {
+                    // التأكد أن الفيديو في نفس النقطة التي توقف عندها
+                    if (video.paused && video.currentTime !== currentVideoTime) {
+                        video.currentTime = currentVideoTime;
+                    }
+                    
                     video.play().then(() => {
                         isVideoPlaying = true;
                         statusDot.className = 'status-dot';
                         statusText.textContent = '▶ تشغيل تلقائي';
-                        console.log('▶ الفيديو يعمل تلقائياً');
+                        console.log(`▶ الفيديو يعمل من ${currentVideoTime.toFixed(2)} ثانية`);
                     }).catch(err => {
                         console.warn('لا يمكن تشغيل الفيديو:', err);
                     });
                 }
             }
 
-            // وظيفة لإيقاف الفيديو مؤقتاً
+            // ============================================
+            // 4. إيقاف الفيديو مع حفظ النقطة
+            // ============================================
             function pauseVideo() {
                 if (isVideoPlaying) {
+                    // حفظ النقطة الحالية قبل الإيقاف
+                    currentVideoTime = video.currentTime;
+                    
                     video.pause();
                     isVideoPlaying = false;
                     statusDot.className = 'status-dot paused';
-                    statusText.textContent = '⏸ متوقف عند التمرير';
-                    console.log('⏸ توقف الفيديو أثناء التمرير');
+                    statusText.textContent = `⏸ توقف عند ${currentVideoTime.toFixed(1)}ث`;
+                    console.log(`⏸ توقف الفيديو عند ${currentVideoTime.toFixed(2)} ثانية`);
+                    
+                    // عرض الوقت
+                    updateTimeDisplay(currentVideoTime);
                 }
             }
 
             // ============================================
-            // 3. كشف التمرير والتوقف
+            // 5. تحديث الوقت أثناء التشغيل التلقائي
             // ============================================
-            
-            let lastScrollY = window.scrollY;
-            
-            window.addEventListener('scroll', function() {
-                const currentScrollY = window.scrollY;
-                
-                // إذا كان هناك تمرير
-                if (Math.abs(currentScrollY - lastScrollY) > 5) {
-                    isScrolling = true;
-                    
-                    // إيقاف الفيديو أثناء التمرير
-                    pauseVideo();
+            video.addEventListener('timeupdate', function() {
+                if (isVideoPlaying && !video.paused) {
+                    // تحديث الوقت الحالي
+                    currentVideoTime = video.currentTime;
                     
                     // تحديث شريط التقدم
+                    if (video.duration) {
+                        const progress = (video.currentTime / video.duration) * 100;
+                        progressBar.style.width = Math.min(progress, 100) + '%';
+                    }
+                    
+                    // تحديث الأقسام النشطة بناءً على وقت الفيديو
+                    updateSectionsByTime(video.currentTime);
+                }
+            });
+
+            // ============================================
+            // 6. تحديث الأقسام بناءً على وقت الفيديو
+            // ============================================
+            function updateSectionsByTime(time) {
+                if (!video.duration) return;
+                
+                const progress = time / video.duration;
+                const totalScenes = sections.length;
+                const sceneIndex = Math.min(Math.floor(progress * totalScenes), totalScenes - 1);
+                
+                sections.forEach((section, index) => {
+                    if (index === sceneIndex) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            }
+
+            // ============================================
+            // 7. كشف التمرير والتوقف (الجزء المهم)
+            // ============================================
+            window.addEventListener('scroll', function() {
+                const currentScrollY = window.scrollY;
+                const scrollDelta = Math.abs(currentScrollY - lastScrollY);
+                
+                // إذا كان هناك تمرير
+                if (scrollDelta > 3) {
+                    isScrolling = true;
+                    
+                    // إيقاف الفيديو وحفظ النقطة
+                    if (isVideoPlaying) {
+                        pauseVideo();
+                    }
+                    
+                    // تحديث شريط التقدم من التمرير
                     const scrollPercent = (currentScrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
                     progressBar.style.width = Math.min(scrollPercent, 100) + '%';
                     
-                    // تحديث الأقسام النشطة
+                    // تحديث الأقسام من التمرير
                     updateActiveSections(currentScrollY);
                     
                     // إعادة تعيين المؤقت
                     clearTimeout(scrollTimeout);
                     
-                    // بعد توقف التمرير بـ 500ms، شغّل الفيديو
+                    // بعد توقف التمرير بـ 400ms، شغّل الفيديو من حيث توقف
                     scrollTimeout = setTimeout(() => {
                         isScrolling = false;
+                        // التشغيل من النقطة المحفوظة currentVideoTime
                         playVideo();
-                    }, 500);
+                    }, 400);
                 }
                 
                 lastScrollY = currentScrollY;
             });
 
             // ============================================
-            // 4. تحديث الأقسام النشطة (اللقطات)
+            // 8. تحديث الأقسام من التمرير
             // ============================================
-            
             function updateActiveSections(scrollY) {
                 sections.forEach((section, index) => {
                     const rect = section.getBoundingClientRect();
@@ -404,16 +508,17 @@
                     if (isActive) {
                         section.classList.add('active');
                         
-                        // الانتقال إلى المشهد المناسب في الفيديو
-                        const sceneIndex = index;
+                        // تحديث وقت الفيديو بناءً على اللقطة (أثناء التمرير)
                         const totalScenes = sections.length;
-                        const progress = sceneIndex / (totalScenes - 1);
+                        const progress = index / (totalScenes - 1);
                         
-                        // تغيير وقت الفيديو بناءً على المشهد (إذا لم يكن في وضع التشغيل التلقائي)
-                        if (!isVideoPlaying && video.duration) {
+                        if (video.duration) {
                             const targetTime = progress * video.duration;
-                            if (Math.abs(video.currentTime - targetTime) > 0.5) {
+                            // فقط إذا كان الفرق كبيراً
+                            if (Math.abs(video.currentTime - targetTime) > 0.3) {
                                 video.currentTime = targetTime;
+                                currentVideoTime = targetTime; // حفظ النقطة الجديدة
+                                updateTimeDisplay(targetTime);
                             }
                         }
                     } else {
@@ -423,66 +528,57 @@
             }
 
             // ============================================
-            // 5. بدء التشغيل التلقائي بعد التحميل
+            // 9. بدء التشغيل التلقائي بعد التحميل
             // ============================================
-            
-            // تأكد من تحميل الفيديو
             video.addEventListener('loadedmetadata', function() {
                 console.log('✅ الفيديو جاهز، الطول:', video.duration, 'ثانية');
+                currentVideoTime = 0;
                 
-                // بدء التشغيل التلقائي
                 setTimeout(() => {
                     playVideo();
-                }, 1000);
+                }, 800);
             });
 
             // ============================================
-            // 6. التحكم عند تغيير حجم النافذة
+            // 10. التحكم عند تغيير حجم النافذة
             // ============================================
-            
             window.addEventListener('resize', function() {
                 updateActiveSections(window.scrollY);
             });
 
             // ============================================
-            // 7. منع إيقاف الفيديو عند الخروج من الصفحة
+            // 11. العودة للصفحة
             // ============================================
-            
             document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    // الصفحة غير مرئية
-                } else {
-                    // العودة للصفحة - استمرار التشغيل
-                    if (!isScrolling) {
-                        playVideo();
-                    }
+                if (!document.hidden && !isScrolling) {
+                    playVideo();
                 }
             });
 
             // ============================================
-            // 8. معالجة الأخطاء
+            // 12. عند انتهاء الفيديو
             // ============================================
-            
+            video.addEventListener('ended', function() {
+                console.log('🏁 انتهى الفيديو');
+                // إعادة التشغيل من البداية
+                if (isVideoPlaying) {
+                    video.currentTime = 0;
+                    currentVideoTime = 0;
+                    video.play();
+                }
+            });
+
+            // ============================================
+            // 13. معالجة الأخطاء
+            // ============================================
             video.addEventListener('error', function(e) {
                 console.error('خطأ في الفيديو:', e);
                 statusText.textContent = '⚠ خطأ في الفيديو';
                 statusDot.className = 'status-dot paused';
             });
 
-            // ============================================
-            // 9. شريط التقدم يتغير مع الفيديو
-            // ============================================
-            
-            video.addEventListener('timeupdate', function() {
-                if (isVideoPlaying && !isScrolling) {
-                    const progress = (video.currentTime / video.duration) * 100;
-                    // تحديث شريط التقدم بناءً على وقت الفيديو
-                    // (يمكن تفعيل هذا بدلاً من التمرير)
-                }
-            });
-
             console.log('✅ تم تهيئة الفيديو التفاعلي بنجاح');
-            console.log('📌 تمرير = تحكم بالفيديو | توقف = تشغيل تلقائي');
+            console.log('📌 تمرير = تحكم بالفيديو | توقف = تشغيل من نفس النقطة');
         });
     </script>
 
