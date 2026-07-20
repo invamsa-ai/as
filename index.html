@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>فيديو تفاعلي - تأثيرات نصوص احترافية</title>
+    <title>فيديو تفاعلي - تشغيل من حيث توقف</title>
     
     <!-- مكتبة scrolly-video -->
     <script src="https://cdn.jsdelivr.net/npm/scrolly-video@latest/dist/scrolly-video.js"></script>
-    
-    <!-- مكتبة GSAP للرسوم المتحركة -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     
     <style>
         /* إعادة تعيين */
@@ -66,19 +62,11 @@
             top: 0;
             left: 0;
             height: 4px;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5, #ff6b6b, #ffd93d);
-            background-size: 300% 100%;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
             z-index: 100;
             width: 0%;
             transition: width 0.1s;
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
-            animation: gradientMove 3s ease infinite;
-        }
-
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
 
         /* ---- المحتوى فوق الفيديو ---- */
@@ -104,15 +92,13 @@
             background: transparent;
             backdrop-filter: blur(2px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s;
         }
 
         /* ============================================ */
-        /* تأثيرات النصوص المتقدمة */
+        /* تأثيرات النصوص البطيئة - فقط CSS */
         /* ============================================ */
-
-        /* كل عنصر نصي له تأثير مختلف */
+        
         .section h2 {
             font-size: clamp(2.4rem, 7vw, 4.6rem);
             font-weight: 700;
@@ -124,10 +110,10 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             
-            /* تأثيرات مخفية */
+            /* تأثير دخول بطيء */
             opacity: 0;
-            transform: perspective(500px) rotateX(15deg) translateY(60px);
-            transition: none;
+            transform: translateY(40px) scale(0.9);
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .section p {
@@ -141,61 +127,82 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
             
-            /* تأثيرات مخفية */
+            /* تأثير دخول بطيء مع تأخير */
             opacity: 0;
-            transform: translateX(-80px) scale(0.8);
-            transition: none;
+            transform: translateX(-60px);
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
         }
 
-        /* تأثير خاص لبعض العناصر */
-        .section .highlight {
+        /* ظهور النصوص عند وصول المستخدم */
+        .section.active h2 {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .section.active p {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* تأثير إضافي: توهج عند الظهور */
+        .section.active h2 {
+            animation: glowPulse 2s ease-in-out;
+        }
+
+        @keyframes glowPulse {
+            0% { filter: drop-shadow(0 0 0px rgba(0, 210, 255, 0)); }
+            50% { filter: drop-shadow(0 0 30px rgba(0, 210, 255, 0.3)); }
+            100% { filter: drop-shadow(0 0 0px rgba(0, 210, 255, 0)); }
+        }
+
+        /* تأثير الكتابة على بعض الكلمات */
+        .typing-text {
             display: inline-block;
-            position: relative;
+            border-left: 2px solid #00d2ff;
+            padding-right: 8px;
+            animation: blink-cursor 1s step-end infinite;
+        }
+
+        @keyframes blink-cursor {
+            50% { border-color: transparent; }
+        }
+
+        /* كلمات متحركة */
+        .float-word {
+            display: inline-block;
+            animation: floatAnim 3s ease-in-out infinite;
+        }
+
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* كلمات مميزة */
+        .highlight-word {
             color: #ffd93d;
             -webkit-text-fill-color: #ffd93d;
             background: none;
-            padding: 0 5px;
+            padding: 0 4px;
+            position: relative;
         }
 
-        .section .highlight::after {
+        .highlight-word::after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: -3px;
             left: 0;
             width: 0;
-            height: 3px;
+            height: 2px;
             background: linear-gradient(90deg, #ffd93d, #ff6b6b);
             transition: width 0.8s ease;
         }
 
-        .section.active .highlight::after {
+        .section.active .highlight-word::after {
             width: 100%;
         }
 
-        /* تأثير تذبذب للكلمات */
-        .word-float {
-            display: inline-block;
-            animation: floatWord 3s ease-in-out infinite;
-        }
-
-        @keyframes floatWord {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(2deg); }
-        }
-
-        /* تأثير الكتابة (typing) */
-        .typing-effect {
-            display: inline-block;
-            border-left: 3px solid #00d2ff;
-            padding-right: 10px;
-            animation: typingBlink 1s step-end infinite;
-        }
-
-        @keyframes typingBlink {
-            50% { border-color: transparent; }
-        }
-
-        /* مؤشر التمرير المتقدم */
+        /* مؤشر التمرير */
         .scroll-hint {
             margin-top: 2.5rem;
             font-size: 1rem;
@@ -207,14 +214,16 @@
             backdrop-filter: blur(6px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             animation: pulse 2s infinite;
+            
+            /* ظهور متأخر */
             opacity: 0;
-            transform: scale(0.5);
+            transform: scale(0.7);
+            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.8s;
         }
 
-        .scroll-hint.show {
+        .section.active .scroll-hint {
             opacity: 1;
             transform: scale(1);
-            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes pulse {
@@ -295,34 +304,6 @@
             opacity: 1;
         }
 
-        /* جزيئات خلفية للنصوص */
-        .particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: -1;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(0, 210, 255, 0.3);
-            border-radius: 50%;
-            animation: particleFloat 15s linear infinite;
-        }
-
-        @keyframes particleFloat {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
-        }
-
         .footer {
             height: 30vh;
             display: flex;
@@ -380,42 +361,37 @@
 
         <!-- اللقطة 1 -->
         <section class="section" data-scene="0">
-            <div class="particles" id="particles1"></div>
-            <h2 class="scene-title">🎬 <span class="word-float">فيديو</span> <span class="highlight">تفاعلي</span></h2>
-            <p class="scene-desc">تمرير للتحكم بالفيديو — <span class="typing-effect">توقف لاستمرار التشغيل</span> من نفس النقطة</p>
-            <div class="scroll-hint" id="hint1">⬇️ مرر للأسفل ⬇️</div>
+            <h2>🎬 <span class="float-word">فيديو</span> <span class="highlight-word">تفاعلي</span></h2>
+            <p>تمرير للتحكم بالفيديو — <span class="typing-text">توقف لاستمرار التشغيل</span> من نفس النقطة</p>
+            <div class="scroll-hint">⬇️ مرر للأسفل ⬇️</div>
         </section>
 
         <!-- اللقطة 2 -->
         <section class="section" data-scene="1">
-            <div class="particles" id="particles2"></div>
-            <h2 class="scene-title">✨ <span class="highlight">انتقالات</span> <span class="word-float">سلسة</span></h2>
-            <p class="scene-desc">مع كل تمرير تظهر <span class="highlight">لقطات جديدة</span> بسلاسة واحترافية</p>
+            <h2>✨ <span class="highlight-word">انتقالات</span> <span class="float-word">سلسة</span></h2>
+            <p>مع كل تمرير تظهر <span class="highlight-word">لقطات جديدة</span> بسلاسة</p>
         </section>
 
         <!-- اللقطة 3 -->
         <section class="section" data-scene="2">
-            <div class="particles" id="particles3"></div>
-            <h2 class="scene-title">🌌 <span class="word-float">مشاهد</span> <span class="highlight">ديناميكية</span></h2>
-            <p class="scene-desc">يتوقف التمرير؟ <span class="typing-effect">الفيديو يستمر</span> من حيث توقف</p>
+            <h2>🌌 <span class="float-word">مشاهد</span> <span class="highlight-word">ديناميكية</span></h2>
+            <p>يتوقف التمرير؟ <span class="typing-text">الفيديو يستمر</span> من حيث توقف</p>
         </section>
 
         <!-- اللقطة 4 -->
         <section class="section" data-scene="3">
-            <div class="particles" id="particles4"></div>
-            <h2 class="scene-title">🚀 <span class="highlight">تحكم</span> <span class="word-float">كامل</span></h2>
-            <p class="scene-desc">تجربة <span class="highlight">غامرة</span> تجمع بين التمرير والتشغيل التلقائي</p>
+            <h2>🚀 <span class="highlight-word">تحكم</span> <span class="float-word">كامل</span></h2>
+            <p>تجربة <span class="highlight-word">غامرة</span> تجمع بين التمرير والتشغيل التلقائي</p>
         </section>
 
         <!-- اللقطة 5 -->
         <section class="section" data-scene="4">
-            <div class="particles" id="particles5"></div>
-            <h2 class="scene-title">🎯 <span class="highlight">احترافي</span> <span class="word-float">ومبتكر</span></h2>
-            <p class="scene-desc">مثالي للقصص التفاعلية <span class="typing-effect">والعروض التقديمية</span> المميزة</p>
+            <h2>🎯 <span class="highlight-word">احترافي</span> <span class="float-word">ومبتكر</span></h2>
+            <p>مثالي للقصص التفاعلية <span class="typing-text">والعروض التقديمية</span> المميزة</p>
         </section>
 
         <div class="footer">
-            <span>🔄 تمرير + تشغيل من حيث توقف — تأثيرات نصوص GSAP</span>
+            <span>🔄 تمرير + تشغيل من حيث توقف — تأثيرات نصوص بطيئة</span>
         </div>
 
     </div>
@@ -432,11 +408,6 @@
     </div>
 
     <script>
-        // ============================================
-        // تهيئة GSAP و ScrollTrigger
-        // ============================================
-        gsap.registerPlugin(ScrollTrigger);
-
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById('bg-video');
             const progressBar = document.getElementById('progressBar');
@@ -459,183 +430,9 @@
             let isVideoPlaying = false;
             let lastScrollY = window.scrollY;
             let currentVideoTime = 0;
-            let animationsInitialized = false;
 
             // ============================================
-            // 1. إنشاء جزيئات الخلفية
-            // ============================================
-            function createParticles(containerId, count = 30) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                for (let i = 0; i < count; i++) {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.animationDelay = Math.random() * 15 + 's';
-                    particle.style.animationDuration = (10 + Math.random() * 20) + 's';
-                    particle.style.width = (2 + Math.random() * 6) + 'px';
-                    particle.style.height = particle.style.width;
-                    particle.style.background = `hsla(${200 + Math.random() * 60}, 80%, 60%, ${0.1 + Math.random() * 0.3})`;
-                    container.appendChild(particle);
-                }
-            }
-
-            ['particles1', 'particles2', 'particles3', 'particles4', 'particles5'].forEach(id => {
-                createParticles(id, 25);
-            });
-
-            // ============================================
-            // 2. تهيئة تأثيرات GSAP للنصوص
-            // ============================================
-            function initTextAnimations() {
-                if (animationsInitialized) return;
-                animationsInitialized = true;
-
-                sections.forEach((section, index) => {
-                    const title = section.querySelector('.scene-title');
-                    const desc = section.querySelector('.scene-desc');
-                    const hint = section.querySelector('.scroll-hint');
-
-                    // تأثير العنوان - دخول بطيء مع دوران ثلاثي الأبعاد
-                    gsap.fromTo(title, 
-                        {
-                            opacity: 0,
-                            rotationX: 20,
-                            y: 80,
-                            scale: 0.7
-                        },
-                        {
-                            opacity: 1,
-                            rotationX: 0,
-                            y: 0,
-                            scale: 1,
-                            duration: 1.8,
-                            ease: "power3.out",
-                            scrollTrigger: {
-                                trigger: section,
-                                start: "top 75%",
-                                end: "top 25%",
-                                toggleActions: "play none none reverse",
-                                onEnter: () => {
-                                    // إضافة تأثير إضافي عند الدخول
-                                    gsap.fromTo(title, 
-                                        { textShadow: "0 0 0px rgba(0,210,255,0)" },
-                                        { textShadow: "0 0 40px rgba(0,210,255,0.3)", duration: 0.5, ease: "power2.out" }
-                                    );
-                                }
-                            }
-                        }
-                    );
-
-                    // تأثير الوصف - دخول من اليسار مع دوران
-                    gsap.fromTo(desc,
-                        {
-                            opacity: 0,
-                            x: -100,
-                            rotationY: 20,
-                            scale: 0.8
-                        },
-                        {
-                            opacity: 1,
-                            x: 0,
-                            rotationY: 0,
-                            scale: 1,
-                            duration: 1.5,
-                            delay: 0.3,
-                            ease: "back.out(1.7)",
-                            scrollTrigger: {
-                                trigger: section,
-                                start: "top 70%",
-                                end: "top 20%",
-                                toggleActions: "play none none reverse"
-                            }
-                        }
-                    );
-
-                    // تأثير مؤشر التمرير - ظهور متأخر
-                    if (hint && index === 0) {
-                        gsap.fromTo(hint,
-                            {
-                                opacity: 0,
-                                scale: 0.3,
-                                rotation: -10
-                            },
-                            {
-                                opacity: 1,
-                                scale: 1,
-                                rotation: 0,
-                                duration: 1.2,
-                                delay: 1.5,
-                                ease: "elastic.out(1, 0.5)",
-                                scrollTrigger: {
-                                    trigger: section,
-                                    start: "top 60%",
-                                    toggleActions: "play none none reverse"
-                                }
-                            }
-                        );
-                    }
-
-                    // تأثير الكلمات المميزة (تأثير الكتابة)
-                    const highlights = section.querySelectorAll('.highlight');
-                    highlights.forEach((el, i) => {
-                        gsap.fromTo(el,
-                            { color: '#ffd93d', scale: 0.5 },
-                            {
-                                scale: 1,
-                                duration: 1,
-                                delay: i * 0.2,
-                                ease: "bounce.out",
-                                scrollTrigger: {
-                                    trigger: section,
-                                    start: "top 60%",
-                                    toggleActions: "play none none reverse"
-                                }
-                            }
-                        );
-                    });
-
-                    // تأثير الكلمات العائمة
-                    const floats = section.querySelectorAll('.word-float');
-                    floats.forEach((el) => {
-                        gsap.to(el, {
-                            y: -10,
-                            duration: 2,
-                            repeat: -1,
-                            yoyo: true,
-                            ease: "sine.inOut",
-                            scrollTrigger: {
-                                trigger: section,
-                                start: "top 60%",
-                                toggleActions: "play none none reverse"
-                            }
-                        });
-                    });
-
-                    // تأثير الكتابة (typing) - وميض المؤشر
-                    const typingElements = section.querySelectorAll('.typing-effect');
-                    typingElements.forEach((el) => {
-                        gsap.to(el, {
-                            borderColor: 'transparent',
-                            duration: 0.8,
-                            repeat: -1,
-                            yoyo: true,
-                            ease: "steps(1)",
-                            scrollTrigger: {
-                                trigger: section,
-                                start: "top 60%",
-                                toggleActions: "play none none reverse"
-                            }
-                        });
-                    });
-                });
-
-                console.log('✅ تم تهيئة تأثيرات GSAP');
-            }
-
-            // ============================================
-            // 3. تهيئة Scrolly Video
+            // 1. تهيئة Scrolly Video
             // ============================================
             const scrollyVideo = new ScrollyVideo({
                 scrollyVideoContainer: "bg-video-container",
@@ -649,7 +446,7 @@
             });
 
             // ============================================
-            // 4. وظائف التحكم بالفيديو
+            // 2. وظيفة تحديث عرض الوقت
             // ============================================
             function updateTimeDisplay(time) {
                 const minutes = Math.floor(time / 60);
@@ -663,6 +460,9 @@
                 }, 3000);
             }
 
+            // ============================================
+            // 3. تشغيل الفيديو من نفس النقطة
+            // ============================================
             function playVideo() {
                 if (!isVideoPlaying) {
                     if (video.paused && video.currentTime !== currentVideoTime) {
@@ -679,6 +479,9 @@
                 }
             }
 
+            // ============================================
+            // 4. إيقاف الفيديو مع حفظ النقطة
+            // ============================================
             function pauseVideo() {
                 if (isVideoPlaying) {
                     currentVideoTime = video.currentTime;
@@ -691,10 +494,27 @@
             }
 
             // ============================================
-            // 5. تحديث الأقسام
+            // 5. تحديث الوقت أثناء التشغيل التلقائي
+            // ============================================
+            video.addEventListener('timeupdate', function() {
+                if (isVideoPlaying && !video.paused) {
+                    currentVideoTime = video.currentTime;
+                    
+                    if (video.duration) {
+                        const progress = (video.currentTime / video.duration) * 100;
+                        progressBar.style.width = Math.min(progress, 100) + '%';
+                    }
+                    
+                    updateSectionsByTime(video.currentTime);
+                }
+            });
+
+            // ============================================
+            // 6. تحديث الأقسام بناءً على وقت الفيديو
             // ============================================
             function updateSectionsByTime(time) {
                 if (!video.duration) return;
+                
                 const progress = time / video.duration;
                 const totalScenes = sections.length;
                 const sceneIndex = Math.min(Math.floor(progress * totalScenes), totalScenes - 1);
@@ -708,33 +528,8 @@
                 });
             }
 
-            function updateActiveSections(scrollY) {
-                sections.forEach((section, index) => {
-                    const rect = section.getBoundingClientRect();
-                    const isActive = rect.top <= window.innerHeight * 0.6 && rect.bottom >= window.innerHeight * 0.4;
-                    
-                    if (isActive) {
-                        section.classList.add('active');
-                        
-                        const totalScenes = sections.length;
-                        const progress = index / (totalScenes - 1);
-                        
-                        if (video.duration) {
-                            const targetTime = progress * video.duration;
-                            if (Math.abs(video.currentTime - targetTime) > 0.3) {
-                                video.currentTime = targetTime;
-                                currentVideoTime = targetTime;
-                                updateTimeDisplay(targetTime);
-                            }
-                        }
-                    } else {
-                        section.classList.remove('active');
-                    }
-                });
-            }
-
             // ============================================
-            // 6. أحداث التمرير
+            // 7. كشف التمرير والتوقف
             // ============================================
             window.addEventListener('scroll', function() {
                 const currentScrollY = window.scrollY;
@@ -763,33 +558,64 @@
             });
 
             // ============================================
-            // 7. أحداث الفيديو
+            // 8. تحديث الأقسام من التمرير
             // ============================================
-            video.addEventListener('timeupdate', function() {
-                if (isVideoPlaying && !video.paused) {
-                    currentVideoTime = video.currentTime;
-                    if (video.duration) {
-                        const progress = (video.currentTime / video.duration) * 100;
-                        progressBar.style.width = Math.min(progress, 100) + '%';
+            function updateActiveSections(scrollY) {
+                sections.forEach((section, index) => {
+                    const rect = section.getBoundingClientRect();
+                    const isActive = rect.top <= window.innerHeight * 0.6 && rect.bottom >= window.innerHeight * 0.4;
+                    
+                    if (isActive) {
+                        section.classList.add('active');
+                        
+                        const totalScenes = sections.length;
+                        const progress = index / (totalScenes - 1);
+                        
+                        if (video.duration) {
+                            const targetTime = progress * video.duration;
+                            if (Math.abs(video.currentTime - targetTime) > 0.3) {
+                                video.currentTime = targetTime;
+                                currentVideoTime = targetTime;
+                                updateTimeDisplay(targetTime);
+                            }
+                        }
+                    } else {
+                        section.classList.remove('active');
                     }
-                    updateSectionsByTime(video.currentTime);
-                }
-            });
+                });
+            }
 
+            // ============================================
+            // 9. بدء التشغيل التلقائي بعد التحميل
+            // ============================================
             video.addEventListener('loadedmetadata', function() {
                 console.log('✅ الفيديو جاهز، الطول:', video.duration, 'ثانية');
                 currentVideoTime = 0;
-                
-                // تهيئة تأثيرات النصوص بعد تحميل الفيديو
-                setTimeout(() => {
-                    initTextAnimations();
-                }, 300);
                 
                 setTimeout(() => {
                     playVideo();
                 }, 800);
             });
 
+            // ============================================
+            // 10. التحكم عند تغيير حجم النافذة
+            // ============================================
+            window.addEventListener('resize', function() {
+                updateActiveSections(window.scrollY);
+            });
+
+            // ============================================
+            // 11. العودة للصفحة
+            // ============================================
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && !isScrolling) {
+                    playVideo();
+                }
+            });
+
+            // ============================================
+            // 12. عند انتهاء الفيديو
+            // ============================================
             video.addEventListener('ended', function() {
                 if (isVideoPlaying) {
                     video.currentTime = 0;
@@ -798,27 +624,18 @@
                 }
             });
 
+            // ============================================
+            // 13. معالجة الأخطاء
+            // ============================================
             video.addEventListener('error', function(e) {
                 console.error('خطأ في الفيديو:', e);
                 statusText.textContent = '⚠ خطأ في الفيديو';
                 statusDot.className = 'status-dot paused';
             });
 
-            // ============================================
-            // 8. أحداث أخرى
-            // ============================================
-            window.addEventListener('resize', function() {
-                updateActiveSections(window.scrollY);
-            });
-
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden && !isScrolling) {
-                    playVideo();
-                }
-            });
-
-            console.log('✅ تم تهيئة الفيديو التفاعلي مع تأثيرات GSAP');
-            console.log('📌 تأثيرات: دخول بطيء | انتقالات ثلاثية الأبعاد | كلمات متحركة');
+            console.log('✅ تم تهيئة الفيديو التفاعلي بنجاح');
+            console.log('📌 تمرير = تحكم بالفيديو | توقف = تشغيل من نفس النقطة');
+            console.log('🎨 تأثيرات نصوص بطيئة وانتقالات سلسة');
         });
     </script>
 
