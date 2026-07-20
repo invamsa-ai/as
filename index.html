@@ -304,20 +304,19 @@
             width: 100%;
         }
 
-        /* ===== إشعار انتهاء اللقطة ===== */
         .scene-end-notification {
             position: fixed;
             bottom: 130px;
             left: 50%;
             transform: translateX(-50%) scale(0.8);
             z-index: 100;
-            background: rgba(255, 100, 100, 0.15);
+            background: rgba(255, 215, 0, 0.15);
             backdrop-filter: blur(12px);
             padding: 8px 22px;
             border-radius: 40px;
-            border: 1px solid rgba(255, 100, 100, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.3);
             font-size: 0.9rem;
-            color: #ff6b6b;
+            color: #ffd93d;
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
@@ -399,7 +398,7 @@
         <span id="statusText">تشغيل تلقائي</span>
     </div>
 
-    <div class="scene-end-notification" id="sceneEndNotification">⏹ انتهت اللقطة - مرر للانتقال</div>
+    <div class="scene-end-notification" id="sceneEndNotification">🔄 انتهت اللقطة - تعيد التشغيل من البداية</div>
 
     <div class="time-display" id="timeDisplay">
         <span id="currentTimeText">00:00</span>
@@ -476,6 +475,7 @@
             const slowModeDuration = 2;
             let isSceneEnded = false;
             let sceneEndTimeout = null;
+            let isLooping = false;
 
             // ============================================
             //  إنشاء الأقسام ونقاط التقدم
@@ -539,6 +539,7 @@
                 currentSceneIndex = index;
                 const scene = scenesData[index];
                 isSceneEnded = false;
+                isLooping = false;
                 
                 // إخفاء إشعار انتهاء اللقطة
                 sceneEndNotification.classList.remove('show');
@@ -593,6 +594,7 @@
                 video.play().then(() => {
                     isVideoPlaying = true;
                     isSlowMode = true;
+                    isLooping = false;
                     
                     statusDot.className = 'status-dot slow';
                     statusText.textContent = '🐢 تشغيل بطيء';
@@ -634,6 +636,7 @@
                     video.pause();
                     isVideoPlaying = false;
                     isSlowMode = false;
+                    isLooping = false;
                     video.playbackRate = originalPlaybackRate;
                     statusDot.className = 'status-dot paused';
                     statusText.textContent = `⏸ توقف عند ${currentVideoTime.toFixed(1)}ث`;
@@ -642,7 +645,7 @@
             }
 
             // ============================================
-            //  مراقبة الفيديو - التأكد من الالتزام بحدود اللقطة
+            //  مراقبة الفيديو - إعادة تشغيل اللقطة عند انتهائها
             // ============================================
             video.addEventListener('timeupdate', function() {
                 if (isVideoPlaying && !video.paused) {
@@ -657,33 +660,33 @@
                     // التحقق من حدود اللقطة الحالية
                     const currentScene = scenesData[currentSceneIndex];
                     if (currentScene) {
-                        // إذا تجاوزنا نهاية اللقطة
+                        // إذا وصلنا إلى نهاية اللقطة
                         if (video.currentTime >= currentScene.endTime) {
-                            if (!isSceneEnded) {
+                            if (!isLooping) {
+                                isLooping = true;
                                 isSceneEnded = true;
                                 
-                                // إيقاف الفيديو مؤقتاً
-                                if (isVideoPlaying) {
-                                    video.pause();
-                                    isVideoPlaying = false;
-                                    statusDot.className = 'status-dot paused';
-                                    statusText.textContent = '⏸ انتهت اللقطة';
-                                    
-                                    // إظهار إشعار انتهاء اللقطة
-                                    sceneEndNotification.classList.add('show');
-                                    
-                                    // إخفاء الإشعار بعد 3 ثواني
-                                    clearTimeout(sceneEndTimeout);
-                                    sceneEndTimeout = setTimeout(() => {
+                                // إظهار إشعار إعادة التشغيل
+                                sceneEndNotification.classList.add('show');
+                                sceneEndNotification.textContent = '🔄 إعادة تشغيل اللقطة';
+                                
+                                // إعادة تشغيل اللقطة من البداية
+                                setTimeout(() => {
+                                    if (isVideoPlaying) {
+                                        // العودة إلى بداية اللقطة
+                                        video.currentTime = currentScene.startTime;
+                                        currentVideoTime = currentScene.startTime;
+                                        updateTimeDisplay(currentScene.startTime);
+                                        isLooping = false;
+                                        isSceneEnded = false;
+                                        
+                                        // إخفاء الإشعار
                                         sceneEndNotification.classList.remove('show');
-                                    }, 3000);
-                                }
-                            }
-                        } else {
-                            // إذا كنا داخل اللقطة
-                            if (isSceneEnded) {
-                                isSceneEnded = false;
-                                sceneEndNotification.classList.remove('show');
+                                        
+                                        // الاستمرار في التشغيل
+                                        video.play().catch(err => console.warn('خطأ في إعادة التشغيل:', err));
+                                    }
+                                }, 300); // تأخير بسيط قبل إعادة التشغيل
                             }
                         }
                     }
@@ -716,11 +719,9 @@
                         if (video.duration && currentSceneIndex < scenesData.length) {
                             const scene = scenesData[currentSceneIndex];
                             if (scene.startTime < video.duration) {
-                                // نتحقق إذا كانت اللقطة قد انتهت
-                                if (isSceneEnded) {
-                                    isSceneEnded = false;
-                                    sceneEndNotification.classList.remove('show');
-                                }
+                                isLooping = false;
+                                isSceneEnded = false;
+                                sceneEndNotification.classList.remove('show');
                                 playVideoSlowFrom(scene.startTime);
                             }
                         }
@@ -770,6 +771,7 @@
                     progressBar.style.width = progress + '%';
                     
                     // إعادة تعيين حالة انتهاء اللقطة
+                    isLooping = false;
                     isSceneEnded = false;
                     sceneEndNotification.classList.remove('show');
                 }
@@ -816,12 +818,12 @@
                 statusDot.className = 'status-dot paused';
             });
 
-            console.log('✅ تم تهيئة الفيديو مع الالتزام بحدود اللقطات');
+            console.log('✅ تم تهيئة الفيديو مع إعادة تشغيل اللقطات');
             console.log('📌 اللقطات المحددة:');
             scenesData.forEach((scene, i) => {
                 console.log(`  لقطة ${i + 1}: ${scene.startTime}ث - ${scene.endTime}ث`);
             });
-            console.log('⏹ عند انتهاء كل لقطة، يتوقف الفيديو حتى يمرر المستخدم');
+            console.log('🔄 عند انتهاء كل لقطة، تعيد التشغيل من البداية تلقائياً');
         });
     </script>
 
