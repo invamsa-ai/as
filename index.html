@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>فيديو تفاعلي - لقطات مخصصة</title>
+    <title>فيديو تفاعلي - تشغيل بطيء جداً</title>
     
     <style>
         * {
@@ -330,6 +330,30 @@
             transform: translateX(-50%) scale(1);
         }
 
+        /* ===== مؤشر سرعة التشغيل ===== */
+        .speed-indicator {
+            position: fixed;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            padding: 4px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            font-size: 0.7rem;
+            color: #ffd93d;
+            font-family: monospace;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .speed-indicator.visible {
+            opacity: 1;
+        }
+
         @media (max-width: 700px) {
             .section p {
                 font-size: 1rem;
@@ -372,6 +396,11 @@
                 padding: 5px 14px;
                 bottom: 110px;
             }
+            .speed-indicator {
+                bottom: 150px;
+                font-size: 0.6rem;
+                padding: 3px 12px;
+            }
         }
     </style>
 </head>
@@ -398,7 +427,9 @@
         <span id="statusText">تشغيل تلقائي</span>
     </div>
 
-    <div class="scene-end-notification" id="sceneEndNotification">🔄 انتهت اللقطة - تعيد التشغيل من البداية</div>
+    <div class="scene-end-notification" id="sceneEndNotification">🔄 إعادة تشغيل اللقطة</div>
+
+    <div class="speed-indicator" id="speedIndicator">🐢 سرعة 0.15x</div>
 
     <div class="time-display" id="timeDisplay">
         <span id="currentTimeText">00:00</span>
@@ -459,6 +490,7 @@
             const timeDisplay = document.getElementById('timeDisplay');
             const currentTimeText = document.getElementById('currentTimeText');
             const sceneEndNotification = document.getElementById('sceneEndNotification');
+            const speedIndicator = document.getElementById('speedIndicator');
 
             // ============================================
             //  متغيرات التحكم
@@ -541,14 +573,11 @@
                 isSceneEnded = false;
                 isLooping = false;
                 
-                // إخفاء إشعار انتهاء اللقطة
                 sceneEndNotification.classList.remove('show');
                 
-                // تحديث شريط التقدم
                 const progress = (index / (totalScenes - 1)) * 100;
                 progressBar.style.width = progress + '%';
                 
-                // تحديث نقاط التقدم
                 const dots = document.querySelectorAll('.scene-dot');
                 dots.forEach((dot, i) => {
                     dot.classList.remove('active', 'visited');
@@ -559,27 +588,24 @@
                     }
                 });
                 
-                // تحديث الأقسام
                 const sections = document.querySelectorAll('.section');
                 sections.forEach((section, i) => {
                     section.classList.toggle('active', i === index);
                 });
                 
-                // تشغيل الفيديو من بداية اللقطة
                 if (video.duration && scene.startTime < video.duration) {
                     video.currentTime = scene.startTime;
                     currentVideoTime = scene.startTime;
                     updateTimeDisplay(scene.startTime);
                     
-                    // تشغيل بطيء لمدة ثانيتين
-                    playVideoSlowFrom(scene.startTime);
+                    playVideoVerySlowFrom(scene.startTime);
                 }
             }
 
             // ============================================
-            //  تشغيل الفيديو بسرعة بطيئة
+            //  تشغيل الفيديو بسرعة بطيئة جداً (0.15x)
             // ============================================
-            function playVideoSlowFrom(time) {
+            function playVideoVerySlowFrom(time) {
                 if (time < 0) time = 0;
                 if (time > video.duration) time = video.duration;
 
@@ -588,8 +614,14 @@
                 updateTimeDisplay(time);
 
                 originalPlaybackRate = video.playbackRate || 1.0;
-                const slowRate = 0.35;
-                video.playbackRate = slowRate;
+                
+                // ✅ سرعة بطيئة جداً: 0.15 من السرعة الطبيعية
+                const verySlowRate = 0.15;
+                video.playbackRate = verySlowRate;
+
+                // إظهار مؤشر السرعة
+                speedIndicator.textContent = `🐢 سرعة ${verySlowRate.toFixed(2)}x`;
+                speedIndicator.classList.add('visible');
 
                 video.play().then(() => {
                     isVideoPlaying = true;
@@ -597,14 +629,16 @@
                     isLooping = false;
                     
                     statusDot.className = 'status-dot slow';
-                    statusText.textContent = '🐢 تشغيل بطيء';
+                    statusText.textContent = '🐢 تشغيل بطيء جداً';
 
+                    // بعد ثانيتين، نعود للسرعة الطبيعية
                     setTimeout(() => {
                         if (isVideoPlaying && isSlowMode) {
                             video.playbackRate = originalPlaybackRate;
                             isSlowMode = false;
                             statusDot.className = 'status-dot';
                             statusText.textContent = '▶ تشغيل تلقائي';
+                            speedIndicator.classList.remove('visible');
                         }
                     }, slowModeDuration * 1000);
 
@@ -641,6 +675,7 @@
                     statusDot.className = 'status-dot paused';
                     statusText.textContent = `⏸ توقف عند ${currentVideoTime.toFixed(1)}ث`;
                     updateTimeDisplay(currentVideoTime);
+                    speedIndicator.classList.remove('visible');
                 }
             }
 
@@ -651,42 +686,34 @@
                 if (isVideoPlaying && !video.paused) {
                     currentVideoTime = video.currentTime;
                     
-                    // تحديث شريط التقدم
                     if (video.duration) {
                         const progress = (video.currentTime / video.duration) * 100;
                         progressBar.style.width = Math.min(progress, 100) + '%';
                     }
                     
-                    // التحقق من حدود اللقطة الحالية
                     const currentScene = scenesData[currentSceneIndex];
                     if (currentScene) {
-                        // إذا وصلنا إلى نهاية اللقطة
                         if (video.currentTime >= currentScene.endTime) {
                             if (!isLooping) {
                                 isLooping = true;
                                 isSceneEnded = true;
                                 
-                                // إظهار إشعار إعادة التشغيل
                                 sceneEndNotification.classList.add('show');
                                 sceneEndNotification.textContent = '🔄 إعادة تشغيل اللقطة';
                                 
-                                // إعادة تشغيل اللقطة من البداية
                                 setTimeout(() => {
                                     if (isVideoPlaying) {
-                                        // العودة إلى بداية اللقطة
                                         video.currentTime = currentScene.startTime;
                                         currentVideoTime = currentScene.startTime;
                                         updateTimeDisplay(currentScene.startTime);
                                         isLooping = false;
                                         isSceneEnded = false;
                                         
-                                        // إخفاء الإشعار
                                         sceneEndNotification.classList.remove('show');
                                         
-                                        // الاستمرار في التشغيل
                                         video.play().catch(err => console.warn('خطأ في إعادة التشغيل:', err));
                                     }
-                                }, 300); // تأخير بسيط قبل إعادة التشغيل
+                                }, 300);
                             }
                         }
                     }
@@ -703,26 +730,23 @@
                 if (scrollDelta > 3) {
                     isScrolling = true;
 
-                    // إيقاف الفيديو
                     if (isVideoPlaying) {
                         pauseVideo();
                     }
 
-                    // تحديث اللقطة الحالية بناءً على التمرير
                     updateSceneFromScroll(currentScrollY);
 
                     clearTimeout(scrollTimeout);
                     scrollTimeout = setTimeout(() => {
                         isScrolling = false;
                         
-                        // عند توقف التمرير، ننتقل إلى بداية اللقطة المحددة
                         if (video.duration && currentSceneIndex < scenesData.length) {
                             const scene = scenesData[currentSceneIndex];
                             if (scene.startTime < video.duration) {
                                 isLooping = false;
                                 isSceneEnded = false;
                                 sceneEndNotification.classList.remove('show');
-                                playVideoSlowFrom(scene.startTime);
+                                playVideoVerySlowFrom(scene.startTime);
                             }
                         }
                     }, 400);
@@ -750,12 +774,10 @@
                 if (activeIndex !== currentSceneIndex) {
                     currentSceneIndex = activeIndex;
                     
-                    // تحديث الأقسام
                     sections.forEach((section, i) => {
                         section.classList.toggle('active', i === activeIndex);
                     });
                     
-                    // تحديث نقاط التقدم
                     const dots = document.querySelectorAll('.scene-dot');
                     dots.forEach((dot, i) => {
                         dot.classList.remove('active');
@@ -766,11 +788,9 @@
                         }
                     });
                     
-                    // تحديث شريط التقدم
                     const progress = (activeIndex / (totalScenes - 1)) * 100;
                     progressBar.style.width = progress + '%';
                     
-                    // إعادة تعيين حالة انتهاء اللقطة
                     isLooping = false;
                     isSceneEnded = false;
                     sceneEndNotification.classList.remove('show');
@@ -804,9 +824,9 @@
                     const scene = scenesData[currentSceneIndex];
                     if (scene && !isSceneEnded) {
                         if (isSlowMode) {
-                            playVideoSlowFrom(currentVideoTime);
+                            playVideoVerySlowFrom(currentVideoTime);
                         } else {
-                            playVideoSlowFrom(scene.startTime);
+                            playVideoVerySlowFrom(scene.startTime);
                         }
                     }
                 }
@@ -818,12 +838,13 @@
                 statusDot.className = 'status-dot paused';
             });
 
-            console.log('✅ تم تهيئة الفيديو مع إعادة تشغيل اللقطات');
+            console.log('✅ تم تهيئة الفيديو مع تشغيل بطيء جداً (0.15x)');
             console.log('📌 اللقطات المحددة:');
             scenesData.forEach((scene, i) => {
                 console.log(`  لقطة ${i + 1}: ${scene.startTime}ث - ${scene.endTime}ث`);
             });
             console.log('🔄 عند انتهاء كل لقطة، تعيد التشغيل من البداية تلقائياً');
+            console.log('🐢 سرعة التشغيل البطيء: 0.15x (بطيء جداً)');
         });
     </script>
 
