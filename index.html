@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>فيديو تفاعلي - لقطات مع التمرير</title>
+    <title>فيديو تفاعلي - لقطات مخصصة</title>
     
     <style>
         * {
@@ -159,6 +159,16 @@
             transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
         }
 
+        .section .time-range {
+            font-size: 0.9rem;
+            color: #00d2ff;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.3rem 1.2rem;
+            border-radius: 20px;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+
         .section.active h2 {
             opacity: 1;
             transform: translateY(0) scale(1);
@@ -167,6 +177,10 @@
         .section.active p {
             opacity: 1;
             transform: translateX(0);
+        }
+
+        .section.active .time-range {
+            opacity: 1;
         }
 
         /* ===== مؤشر اللقطة ===== */
@@ -342,6 +356,10 @@
                 top: 10px;
                 left: 15px;
             }
+            .section .time-range {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.8rem;
+            }
         }
     </style>
 </head>
@@ -383,32 +401,42 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ============================================
-            //  بيانات اللقطات
+            //  بيانات اللقطات حسب الطلب
             // ============================================
             const scenesData = [
                 {
-                    title: '🎬 فيديو تفاعلي',
-                    desc: 'تمرير للتنقل بين اللقطات — كل لقطة مشهد مختلف',
+                    title: '🎬 المشهد الافتتاحي',
+                    desc: 'من البداية حتى 3 ثواني - مقدمة الفيديو',
+                    startTime: 0,
+                    endTime: 3,
                     hint: '⬇️ مرر للأسفل ⬇️'
                 },
                 {
-                    title: '✨ لقطة سينمائية',
-                    desc: 'انتقال سلس بين المشاهد مع تأثيرات بصرية',
+                    title: '✨ المشهد الثاني',
+                    desc: 'من 3 ثواني إلى 4 ثواني - لحظة سريعة',
+                    startTime: 3,
+                    endTime: 4,
                     hint: '✨ استمر بالتمرير'
                 },
                 {
-                    title: '🌌 مشهد ديناميكي',
-                    desc: 'كل تمريرة تنقلك إلى لقطة جديدة بسلاسة',
+                    title: '🌌 المشهد الثالث',
+                    desc: 'من 6 ثواني إلى 7 ثواني - مشهد ديناميكي',
+                    startTime: 6,
+                    endTime: 7,
                     hint: '🚀 تابع التمرير'
                 },
                 {
-                    title: '🎯 تحكم كامل',
-                    desc: 'انتقل بين اللقطات بكل سهولة ومرونة',
+                    title: '🎯 المشهد الرابع',
+                    desc: 'من 9 ثواني إلى 10 ثواني - ذروة المشهد',
+                    startTime: 9,
+                    endTime: 10,
                     hint: '🎯 استمر'
                 },
                 {
-                    title: '🌟 إبداع لا محدود',
-                    desc: 'قصص تفاعلية مع لقطات سينمائية متكاملة',
+                    title: '🌟 المشهد الخامس',
+                    desc: 'نهاية الرحلة - ختام مميز',
+                    startTime: 10,
+                    endTime: 11,
                     hint: '🌟 نهاية الرحلة'
                 }
             ];
@@ -465,6 +493,12 @@
                     p.textContent = scene.desc;
                     section.appendChild(p);
                     
+                    // عرض الوقت
+                    const timeRange = document.createElement('div');
+                    timeRange.className = 'time-range';
+                    timeRange.textContent = `⏱ ${scene.startTime.toFixed(1)}ث - ${scene.endTime.toFixed(1)}ث`;
+                    section.appendChild(timeRange);
+                    
                     // مؤشر التمرير (آخر لقطة لا يحتوي)
                     if (index < totalScenes - 1) {
                         const hint = document.createElement('div');
@@ -472,7 +506,6 @@
                         hint.textContent = scene.hint || '⬇️ مرر للأسفل ⬇️';
                         section.appendChild(hint);
                     } else {
-                        // آخر لقطة - مؤشر النهاية
                         const endHint = document.createElement('div');
                         endHint.className = 'scroll-hint';
                         endHint.textContent = '🏁 نهاية الرحلة';
@@ -485,7 +518,7 @@
                     const dot = document.createElement('div');
                     dot.className = 'scene-dot';
                     dot.dataset.index = index;
-                    dot.title = `لقطة ${index + 1}`;
+                    dot.title = `${scene.title} (${scene.startTime.toFixed(1)}-${scene.endTime.toFixed(1)}ث)`;
                     dot.addEventListener('click', () => {
                         goToScene(index);
                     });
@@ -501,9 +534,10 @@
                 if (index >= totalScenes) index = totalScenes - 1;
                 
                 currentSceneIndex = index;
+                const scene = scenesData[index];
                 
-                // حساب الوقت المستهدف بناءً على اللقطة
-                const targetTime = (index / (totalScenes - 1)) * video.duration;
+                // حساب الوقت المستهدف (بداية اللقطة)
+                const targetTime = scene.startTime;
                 
                 // تحديث شريط التقدم
                 const progress = (index / (totalScenes - 1)) * 100;
@@ -526,8 +560,8 @@
                     section.classList.toggle('active', i === index);
                 });
                 
-                // تشغيل الفيديو من النقطة المستهدفة
-                if (video.duration) {
+                // تشغيل الفيديو من بداية اللقطة
+                if (video.duration && targetTime < video.duration) {
                     video.currentTime = targetTime;
                     currentVideoTime = targetTime;
                     updateTimeDisplay(targetTime);
@@ -629,6 +663,23 @@
             }
 
             // ============================================
+            //  تحديد اللقطة بناءً على وقت الفيديو
+            // ============================================
+            function getSceneIndexFromTime(time) {
+                let index = 0;
+                for (let i = 0; i < scenesData.length; i++) {
+                    if (time >= scenesData[i].startTime && time < scenesData[i].endTime) {
+                        return i;
+                    }
+                    // إذا كان الوقت بين اللقطات، نختار أقرب لقطة
+                    if (time >= scenesData[i].startTime && (i === scenesData.length - 1 || time < scenesData[i + 1].startTime)) {
+                        return i;
+                    }
+                }
+                return scenesData.length - 1;
+            }
+
+            // ============================================
             //  تحديث اللقطة بناءً على التمرير
             // ============================================
             function updateSceneFromScroll(scrollY) {
@@ -645,8 +696,7 @@
                 });
                 
                 if (activeIndex !== currentSceneIndex) {
-                    // لا نغير اللقطة مباشرة، ننتظر توقف التمرير
-                    // لكن نحدد اللقطة النشطة بصرياً
+                    // تحديث الأقسام
                     sections.forEach((section, i) => {
                         section.classList.toggle('active', i === activeIndex);
                     });
@@ -696,10 +746,12 @@
                     scrollTimeout = setTimeout(() => {
                         isScrolling = false;
                         
-                        // عند توقف التمرير، ننتقل إلى اللقطة المحددة
-                        if (video.duration) {
-                            const targetTime = (currentSceneIndex / (totalScenes - 1)) * video.duration;
-                            playVideoSlowFrom(targetTime);
+                        // عند توقف التمرير، ننتقل إلى بداية اللقطة المحددة
+                        if (video.duration && currentSceneIndex < scenesData.length) {
+                            const targetTime = scenesData[currentSceneIndex].startTime;
+                            if (targetTime < video.duration) {
+                                playVideoSlowFrom(targetTime);
+                            }
                         }
                     }, 400);
                 }
@@ -720,7 +772,7 @@
                         progressBar.style.width = Math.min(progress, 100) + '%';
                         
                         // تحديث اللقطة بناءً على وقت الفيديو
-                        const sceneIndex = Math.floor((video.currentTime / video.duration) * totalScenes);
+                        const sceneIndex = getSceneIndexFromTime(video.currentTime);
                         if (sceneIndex !== currentSceneIndex && sceneIndex < totalScenes) {
                             currentSceneIndex = sceneIndex;
                             updateSceneUI(sceneIndex);
@@ -752,6 +804,26 @@
                 const progress = (index / (totalScenes - 1)) * 100;
                 progressBar.style.width = progress + '%';
             }
+
+            // ============================================
+            //  التحقق من حدود اللقطة
+            // ============================================
+            video.addEventListener('timeupdate', function() {
+                if (isVideoPlaying && !video.paused) {
+                    const currentTime = video.currentTime;
+                    
+                    // التحقق مما إذا كنا خارج حدود اللقطة الحالية
+                    const currentScene = scenesData[currentSceneIndex];
+                    if (currentScene && currentTime >= currentScene.endTime) {
+                        // إذا تجاوزنا نهاية اللقطة، نوقف الفيديو مؤقتاً
+                        // أو ننتظر المستخدم للتمرير
+                        if (currentSceneIndex < totalScenes - 1) {
+                            // ننتظر المستخدم للتمرير للقطة التالية
+                            console.log(`⏹ انتهت اللقطة ${currentSceneIndex + 1}`);
+                        }
+                    }
+                }
+            });
 
             // ============================================
             //  تهيئة الفيديو
@@ -799,9 +871,11 @@
                 statusDot.className = 'status-dot paused';
             });
 
-            console.log('✅ تم تهيئة الفيديو التفاعلي مع اللقطات');
-            console.log(`📌 ${totalScenes} لقطة - تمرير للتنقل بينها`);
-            console.log('🐢 تشغيل بطيء لمدة 2 ثانية عند كل انتقال');
+            console.log('✅ تم تهيئة الفيديو التفاعلي مع اللقطات المخصصة');
+            console.log('📌 اللقطات المحددة:');
+            scenesData.forEach((scene, i) => {
+                console.log(`  لقطة ${i + 1}: ${scene.startTime}ث - ${scene.endTime}ث`);
+            });
         });
     </script>
 
