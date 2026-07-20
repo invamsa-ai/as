@@ -1,11 +1,18 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>فيديو تفاعلي - تشغيل بطيء جداً</title>
+    <title>محمد الحناني - Full-Stack Developer</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
     
     <style>
+        /* ===== BASE ===== */
         * {
             margin: 0;
             padding: 0;
@@ -13,838 +20,1293 @@
             direction: rtl;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0b0e14;
-            color: #f0f4fa;
+            font-family: 'Cairo', sans-serif;
+            background: #0a0e17;
+            color: #e8edf5;
             overflow-x: hidden;
+            line-height: 1.6;
         }
 
-        #bg-video-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            overflow: hidden;
-            background: #0a0f15;
+        a {
+            text-decoration: none;
+            color: inherit;
         }
 
-        #bg-video-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: brightness(0.85) saturate(1.1);
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0e17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00d2ff, #3a7bd5);
+            border-radius: 10px;
         }
 
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 1;
-            pointer-events: none;
-            backdrop-filter: blur(1.5px);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-            z-index: 100;
-            width: 0%;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
-        }
-
-        .scenes-progress {
-            position: fixed;
-            top: 15px;
-            right: 50%;
-            transform: translateX(50%);
-            z-index: 100;
-            display: flex;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            padding: 8px 20px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .scene-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .scene-dot.active {
-            background: #00d2ff;
-            border-color: #00d2ff;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
-            transform: scale(1.2);
-        }
-
-        .scene-dot.visited {
-            background: #3a7bd5;
-        }
-
-        .content {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        .section {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 3rem 2rem;
+        /* ===== SECTION TITLES ===== */
+        .section-title {
             text-align: center;
-            width: 100%;
-            background: transparent;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
+            margin-bottom: 3rem;
         }
 
-        .section h2 {
-            font-size: clamp(2.4rem, 7vw, 4.6rem);
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
-            margin-bottom: 1.2rem;
-            background: linear-gradient(135deg, #ffffff 0%, #c0d0f0 100%);
+        .section-title h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            opacity: 0;
-            transform: translateY(40px) scale(0.9);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .section p {
-            font-size: 1.3rem;
-            max-width: 700px;
-            line-height: 1.8;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.8rem 2.2rem;
-            border-radius: 60px;
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateX(-60px);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
-        }
-
-        .section .time-range {
-            font-size: 0.9rem;
-            color: #00d2ff;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.3rem 1.2rem;
-            border-radius: 20px;
-            margin-top: 0.5rem;
-            border: 1px solid rgba(0, 210, 255, 0.2);
-            opacity: 0;
-            transition: all 0.8s ease 0.4s;
-        }
-
-        .section.active h2 {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        .section.active p {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .section.active .time-range {
-            opacity: 1;
-        }
-
-        .scene-number {
-            position: absolute;
-            top: 20px;
-            left: 30px;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.3);
-            font-weight: 300;
-            letter-spacing: 3px;
-            opacity: 0;
-            transition: all 0.6s ease;
-        }
-
-        .section.active .scene-number {
-            opacity: 1;
-        }
-
-        .scroll-hint {
-            margin-top: 2.5rem;
-            font-size: 1rem;
-            letter-spacing: 2px;
-            color: #b8cae0;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.6rem 2rem;
-            border-radius: 60px;
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: pulse 2s infinite;
-            opacity: 0;
-            transform: scale(0.7);
-            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
-        }
-
-        .section.active .scroll-hint {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .status-indicator {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 10px 25px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
-            color: #b8cae0;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #00ff88;
             display: inline-block;
-            animation: blink 1.5s infinite;
         }
 
-        .status-dot.paused {
-            background: #ff6b6b;
-            animation: none;
-        }
-
-        .status-dot.slow {
-            background: #ffd93d;
-            animation: pulse-slow 1s infinite;
-        }
-
-        @keyframes pulse-slow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .time-display {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
-            padding: 5px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.8rem;
+        .section-title p {
             color: #8899bb;
-            font-family: monospace;
-            letter-spacing: 1px;
-            opacity: 0;
-            transition: opacity 0.3s;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
         }
 
-        .time-display.visible {
-            opacity: 1;
+        .section-title .line {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            margin: 0.8rem auto 0;
+            border-radius: 10px;
         }
 
-        .footer {
-            height: 30vh;
+        /* ===== HEADER / NAVIGATION ===== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.92);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.8rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .header .container {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            font-size: 1.2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo span {
+            color: #e8edf5;
+            -webkit-text-fill-color: #e8edf5;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
             color: #a0b4d0;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(4px);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #00d2ff;
+        }
+
+        .nav-links a:hover::after {
             width: 100%;
         }
 
-        .scene-end-notification {
-            position: fixed;
-            bottom: 130px;
-            left: 50%;
-            transform: translateX(-50%) scale(0.8);
-            z-index: 100;
-            background: rgba(255, 215, 0, 0.15);
-            backdrop-filter: blur(12px);
-            padding: 8px 22px;
-            border-radius: 40px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            font-size: 0.9rem;
-            color: #ffd93d;
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            pointer-events: none;
-            white-space: nowrap;
-            font-weight: 500;
-            letter-spacing: 0.5px;
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            color: #e8edf5;
+            cursor: pointer;
         }
 
-        .scene-end-notification.show {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+            background: linear-gradient(135deg, #0a0e17 0%, #111827 100%);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* ===== مؤشر سرعة التشغيل ===== */
-        .speed-indicator {
-            position: fixed;
-            bottom: 180px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
-            padding: 4px 16px;
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: floatBlob 8s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(58, 123, 213, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: floatBlob 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes floatBlob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-content h1 .highlight {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content .subtitle {
+            font-size: 1.4rem;
+            color: #00d2ff;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content p {
+            color: #a0b4d0;
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: #fff;
+            box-shadow: 0 4px 25px rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(0, 210, 255, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #e8edf5;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-outline:hover {
+            border-color: #00d2ff;
+            color: #00d2ff;
+            transform: translateY(-3px);
+        }
+
+        .hero-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-avatar {
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            color: #fff;
+            box-shadow: 0 0 60px rgba(0, 210, 255, 0.15);
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .hero-avatar i {
+            filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        /* ===== ABOUT ===== */
+        .about {
+            padding: 5rem 0;
+            background: #0f1625;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-image {
+            display: flex;
+            justify-content: center;
+        }
+
+        .about-image .avatar-box {
+            width: 300px;
+            height: 300px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7rem;
+            color: #fff;
+            box-shadow: 0 20px 60px rgba(0, 210, 255, 0.1);
+        }
+
+        .about-content h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .about-content .role {
+            color: #00d2ff;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .about-content p {
+            color: #a0b4d0;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .about-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem 2rem;
+        }
+
+        .about-info .info-item {
+            display: flex;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .about-info .info-item i {
+            color: #00d2ff;
+            width: 20px;
+            margin-top: 3px;
+        }
+
+        .about-info .info-item strong {
+            color: #e8edf5;
+        }
+
+        .about-info .info-item span {
+            color: #8899bb;
+        }
+
+        /* ===== RESUME ===== */
+        .resume {
+            padding: 5rem 0;
+            background: #0a0e17;
+        }
+
+        .resume-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .resume-card {
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
-            border: 1px solid rgba(255, 215, 0, 0.1);
-            font-size: 0.7rem;
-            color: #ffd93d;
-            font-family: monospace;
-            letter-spacing: 1px;
-            opacity: 0;
-            transition: opacity 0.3s;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
         }
 
-        .speed-indicator.visible {
-            opacity: 1;
+        .resume-card:hover {
+            border-color: rgba(0, 210, 255, 0.2);
+            transform: translateY(-5px);
         }
 
-        @media (max-width: 700px) {
-            .section p {
-                font-size: 1rem;
-                padding: 0.6rem 1.2rem;
+        .resume-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #00d2ff;
+        }
+
+        .resume-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .resume-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .resume-item .title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #e8edf5;
+        }
+
+        .resume-item .company {
+            color: #00d2ff;
+            font-weight: 600;
+        }
+
+        .resume-item .date {
+            color: #8899bb;
+            font-size: 0.85rem;
+        }
+
+        .resume-item p {
+            color: #a0b4d0;
+            font-size: 0.95rem;
+            margin-top: 0.3rem;
+        }
+
+        .resume-summary {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .resume-summary h3 {
+            color: #00d2ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .resume-summary p {
+            color: #a0b4d0;
+            line-height: 1.8;
+        }
+
+        .resume-contact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .resume-contact a {
+            color: #8899bb;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .resume-contact a:hover {
+            color: #00d2ff;
+        }
+
+        /* ===== SERVICES ===== */
+        .services {
+            padding: 5rem 0;
+            background: #0f1625;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            border-color: rgba(0, 210, 255, 0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .service-card .icon {
+            font-size: 3rem;
+            color: #00d2ff;
+            margin-bottom: 1rem;
+        }
+
+        .service-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-card p {
+            color: #a0b4d0;
+            font-size: 0.95rem;
+        }
+
+        /* ===== TESTIMONIALS ===== */
+        .testimonials {
+            padding: 5rem 0;
+            background: #0a0e17;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            border-color: rgba(0, 210, 255, 0.15);
+        }
+
+        .testimonial-card .quote {
+            color: #a0b4d0;
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .testimonial-card .author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .testimonial-card .author .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .testimonial-card .author .name {
+            font-weight: 700;
+        }
+
+        .testimonial-card .author .title {
+            color: #8899bb;
+            font-size: 0.85rem;
+        }
+
+        /* ===== PORTFOLIO ===== */
+        .portfolio {
+            padding: 5rem 0;
+            background: #0f1625;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .portfolio-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 210, 255, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .portfolio-card .image {
+            height: 200px;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .portfolio-card .info {
+            padding: 1.5rem;
+        }
+
+        .portfolio-card .info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .portfolio-card .info .tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .portfolio-card .info .tags span {
+            background: rgba(0, 210, 255, 0.1);
+            color: #00d2ff;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .portfolio-more {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .portfolio-more p {
+            color: #a0b4d0;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== CONTACT ===== */
+        .contact {
+            padding: 5rem 0;
+            background: #0a0e17;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 3rem;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .contact-info .info-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .contact-info .info-item:hover {
+            border-color: rgba(0, 210, 255, 0.2);
+        }
+
+        .contact-info .info-item i {
+            font-size: 1.5rem;
+            color: #00d2ff;
+            width: 40px;
+        }
+
+        .contact-info .info-item .text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-info .info-item .text .label {
+            font-size: 0.8rem;
+            color: #8899bb;
+        }
+
+        .contact-info .info-item .text .value {
+            font-weight: 600;
+        }
+
+        .contact-form {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .contact-form .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .contact-form label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #e8edf5;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: #00d2ff;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.05);
+        }
+
+        .contact-form textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .contact-form .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            padding: 2rem 0;
+            background: #0a0e17;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .footer .social {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer .social a {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0b4d0;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .footer .social a:hover {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: #fff;
+            transform: translateY(-3px);
+        }
+
+        .footer p {
+            color: #8899bb;
+            font-size: 0.95rem;
+        }
+
+        .footer .brand {
+            color: #00d2ff;
+            font-weight: 700;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
             }
-            .scroll-hint {
-                font-size: 0.9rem;
-                padding: 0.4rem 1.4rem;
+            .hero-content p {
+                margin: 0 auto 2rem;
             }
-            .status-indicator {
-                font-size: 0.7rem;
-                padding: 6px 15px;
-                bottom: 15px;
+            .hero-buttons {
+                justify-content: center;
             }
-            .time-display {
-                bottom: 70px;
-                font-size: 0.7rem;
-                padding: 4px 12px;
+            .hero-avatar {
+                width: 250px;
+                height: 250px;
+                font-size: 5rem;
             }
-            .scenes-progress {
-                top: 10px;
-                padding: 5px 12px;
-                gap: 6px;
+            .about-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
             }
-            .scene-dot {
-                width: 8px;
-                height: 8px;
+            .about-info {
+                justify-items: center;
             }
-            .scene-number {
-                font-size: 0.7rem;
-                top: 10px;
-                left: 15px;
+            .about-info .info-item {
+                justify-content: center;
             }
-            .section .time-range {
-                font-size: 0.7rem;
-                padding: 0.2rem 0.8rem;
+            .resume-grid {
+                grid-template-columns: 1fr;
             }
-            .scene-end-notification {
-                font-size: 0.7rem;
-                padding: 5px 14px;
-                bottom: 110px;
+            .contact-grid {
+                grid-template-columns: 1fr;
             }
-            .speed-indicator {
-                bottom: 150px;
-                font-size: 0.6rem;
-                padding: 3px 12px;
+            .contact-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(10, 14, 23, 0.98);
+                padding: 1.5rem;
+                gap: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .nav-links.open {
+                display: flex;
+            }
+            .hamburger {
+                display: block;
+            }
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            .about-info {
+                grid-template-columns: 1fr;
+            }
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+            .hero-avatar {
+                width: 200px;
+                height: 200px;
+                font-size: 4rem;
+            }
+            .about-image .avatar-box {
+                width: 200px;
+                height: 200px;
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            .hero-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            .testimonials-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="progress-bar" id="progressBar"></div>
-    <div class="scenes-progress" id="scenesProgress"></div>
+    <!-- ===== HEADER ===== -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="logo">M<span>.</span>Al-Hanani</div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#hero">الرئيسية</a></li>
+                <li><a href="#about">من أنا</a></li>
+                <li><a href="#resume">السيرة</a></li>
+                <li><a href="#services">الخدمات</a></li>
+                <li><a href="#portfolio">أعمالي</a></li>
+                <li><a href="#contact">اتصل بي</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
 
-    <div id="bg-video-container">
-        <video id="bg-video" muted playsinline preload="auto">
-            <source src="your-video.mp4" type="video/mp4" />
-            متصفحك لا يدعم فيديو الخلفية.
-        </video>
-    </div>
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>محمد <span class="highlight">الحناني</span></h1>
+                <div class="subtitle">FULL-STACK WEB & MOBILE DEVELOPER</div>
+                <p>مطور ويب وتطبيقات موبايل متكامل، أبني حلولاً رقمية مبتكرة بتقنيات حديثة وكود نظيف.</p>
+                <div class="hero-buttons">
+                    <a href="#contact" class="btn btn-primary"><i class="fas fa-paper-plane"></i> تواصل معي</a>
+                    <a href="#portfolio" class="btn btn-outline"><i class="fas fa-code"></i> أعمالي</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-avatar">
+                    <i class="fas fa-user-astronaut"></i>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="overlay"></div>
+    <!-- ===== ABOUT ===== -->
+    <section class="about" id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>من أنا</h2>
+                <p>رحلتي كمطور Full-Stack</p>
+                <div class="line"></div>
+            </div>
+            <div class="about-grid">
+                <div class="about-image">
+                    <div class="avatar-box">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                </div>
+                <div class="about-content">
+                    <h3>محمد الحناني</h3>
+                    <div class="role">Full-Stack Web Developer</div>
+                    <p>
+                        مطور شغوف بخبرة في تقنيات الواجهة الأمامية والخلفية. أبني تطبيقات ويب متجاوبة وقابلة للتطوير 
+                        بكود نظيف وأطر عمل حديثة.
+                    </p>
+                    <div class="about-info">
+                        <div class="info-item"><i class="fas fa-user"></i> <strong>الاسم:</strong> <span>محمد الحناني</span></div>
+                        <div class="info-item"><i class="fas fa-envelope"></i> <strong>البريد:</strong> <span>Mohammadalhnani@gmail.com</span></div>
+                        <div class="info-item"><i class="fas fa-phone"></i> <strong>الهاتف:</strong> <span>+967 711 447 801</span></div>
+                        <div class="info-item"><i class="fas fa-briefcase"></i> <strong>الخبرة:</strong> <span>2+ سنة</span></div>
+                        <div class="info-item"><i class="fas fa-check-circle"></i> <strong>العمل الحر:</strong> <span>متاح</span></div>
+                        <div class="info-item"><i class="fas fa-map-marker-alt"></i> <strong>الموقع:</strong> <span>اليمن</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="content">
-        <!-- الأقسام سيتم إنشاؤها بواسطة JavaScript -->
-    </div>
+    <!-- ===== RESUME ===== -->
+    <section class="resume" id="resume">
+        <div class="container">
+            <div class="section-title">
+                <h2>سيرتي الذاتية</h2>
+                <p>رحلتي المهنية وخبراتي التقنية</p>
+                <div class="line"></div>
+            </div>
 
-    <div class="status-indicator" id="statusIndicator">
-        <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">تشغيل تلقائي</span>
-    </div>
+            <div class="resume-summary">
+                <h3>محمد الحناني</h3>
+                <p>
+                    مطور Full Stack متخصص في Flutter و Laravel مع خبرة تزيد عن سنتين في تطوير التطبيقات.
+                </p>
+                <div class="resume-contact">
+                    <a href="#"><i class="fas fa-map-marker-alt"></i> صنعاء، اليمن</a>
+                    <a href="tel:+967711447801"><i class="fas fa-phone"></i> +967 711 447 801</a>
+                    <a href="mailto:mohammadalhnani2004@gmail.com"><i class="fas fa-envelope"></i> mohammadalhnani2004@gmail.com</a>
+                    <a href="#"><i class="fab fa-github"></i> MohammedAlHanani</a>
+                </div>
+            </div>
 
-    <div class="scene-end-notification" id="sceneEndNotification">🔄 إعادة تشغيل اللقطة</div>
+            <div class="resume-grid">
+                <div class="resume-card">
+                    <h3><i class="fas fa-briefcase"></i> الخبرة المهنية</h3>
+                    <div class="resume-item">
+                        <div class="title">مطور Flutter & Firebase</div>
+                        <div class="company">شركة تقنية</div>
+                        <div class="date">يناير 2022 - الحالي</div>
+                        <p>تطوير أكثر من 10 تطبيقات موبايل متعددة المنصات باستخدام Flutter.</p>
+                    </div>
+                </div>
+                <div class="resume-card">
+                    <h3><i class="fas fa-graduation-cap"></i> التعليم</h3>
+                    <div class="resume-item">
+                        <div class="title">بكالوريوس هندسة برمجيات</div>
+                        <div class="company">جامعة GIC</div>
+                        <div class="date">2020 - 2024</div>
+                        <p>تخرج بتقدير ممتاز مع مشروع تخرج متميز في تطوير التطبيقات.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="speed-indicator" id="speedIndicator">🐢 سرعة 0.15x</div>
+    <!-- ===== SERVICES ===== -->
+    <section class="services" id="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>خدماتي</h2>
+                <p>ما أقدمه من حلول تقنية</p>
+                <div class="line"></div>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h4>تطوير تطبيقات الموبايل</h4>
+                    <p>بناء تطبيقات موبايل متعددة المنصات باستخدام Flutter</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon"><i class="fas fa-globe"></i></div>
+                    <h4>تطوير الويب</h4>
+                    <p>إنشاء تطبيقات ويب متجاوبة باستخدام Laravel</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon"><i class="fas fa-server"></i></div>
+                    <h4>الواجهة الخلفية و APIs</h4>
+                    <p>تطوير أنظمة خلفية قوية و APIs باستخدام RESTful</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon"><i class="fas fa-fire"></i></div>
+                    <h4>حلول Firebase</h4>
+                    <p>تنفيذ خدمات Firebase بما في ذلك المصادقة والبيانات</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="time-display" id="timeDisplay">
-        <span id="currentTimeText">00:00</span>
-    </div>
+    <!-- ===== TESTIMONIALS ===== -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>شهادات</h2>
+                <p>آراء من عملت معهم</p>
+                <div class="line"></div>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="quote">
+                        "محمد الحناني كان من أبرز طلاب الكلية تميزاً في مجال تطوير البرمجيات."
+                    </div>
+                    <div class="author">
+                        <div class="avatar">د</div>
+                        <div>
+                            <div class="name">د. فرحان الجابري</div>
+                            <div class="title">عميد كلية GIC</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="quote">
+                        "خلال تقييمنا لمشروع محمد الحناني، لاحظنا تميزاً غير عادي في جودة الكود والتصميم."
+                    </div>
+                    <div class="author">
+                        <div class="avatar">م</div>
+                        <div>
+                            <div class="name">م. مهند المشرقي</div>
+                            <div class="title">خبير أنظمة معلومات - عضو لجنة المناقشة</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <!-- ===== PORTFOLIO ===== -->
+    <section class="portfolio" id="portfolio">
+        <div class="container">
+            <div class="section-title">
+                <h2>أعمالي</h2>
+                <p>نماذج من مشاريعي</p>
+                <div class="line"></div>
+            </div>
+            <div class="portfolio-grid">
+                <div class="portfolio-card">
+                    <div class="image"><i class="fas fa-map-marked-alt"></i></div>
+                    <div class="info">
+                        <h4>تطبيق تتبع المواقع</h4>
+                        <p style="color:#8899bb; font-size:0.9rem;">Location Tracking App</p>
+                        <div class="tags">
+                            <span>Flutter</span>
+                            <span>Google Maps API</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="image"><i class="fas fa-truck"></i></div>
+                    <div class="info">
+                        <h4>نظام إدارة الأساطيل</h4>
+                        <p style="color:#8899bb; font-size:0.9rem;">Fleet Management System</p>
+                        <div class="tags">
+                            <span>Laravel</span>
+                            <span>MySQL</span>
+                            <span>JavaScript</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="image"><i class="fas fa-shield-alt"></i></div>
+                    <div class="info">
+                        <h4>نظام مصادقة Firebase</h4>
+                        <p style="color:#8899bb; font-size:0.9rem;">Firebase Auth System</p>
+                        <div class="tags">
+                            <span>Flutter</span>
+                            <span>Firebase Auth</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portfolio-more">
+                <p>
+                    <i class="fas fa-rocket" style="color:#00d2ff;"></i>
+                    لديّ المزيد من المشاريع الاحترافية والإنجازات التي أنجزتها.
+                    أدعوك لزيارة ملفي الشخصي على LinkedIn لمشاهدة مجموعة كاملة من أعمالي وخبراتي.
+                </p>
+                <a href="#" class="btn btn-primary"><i class="fab fa-linkedin"></i> تصفح مشاريعي على LinkedIn</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CONTACT ===== -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>اتصل بي</h2>
+                <p>تواصل معي لبدء مشروعك القادم</p>
+                <div class="line"></div>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="text">
+                            <span class="label">العنوان</span>
+                            <span class="value">اليمن، صنعاء، طريق المطار</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <div class="text">
+                            <span class="label">اتصل بي</span>
+                            <span class="value">+967 711 441 780</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <div class="text">
+                            <span class="label">البريد الإلكتروني</span>
+                            <span class="value">mohammadalhnani2004@gmail.com</span>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <label>اسمك</label>
+                        <input type="text" placeholder="أدخل اسمك" required />
+                    </div>
+                    <div class="form-group">
+                        <label>بريدك الإلكتروني</label>
+                        <input type="email" placeholder="أدخل بريدك الإلكتروني" required />
+                    </div>
+                    <div class="form-group">
+                        <label>الموضوع</label>
+                        <input type="text" placeholder="أدخل الموضوع" required />
+                    </div>
+                    <div class="form-group">
+                        <label>رسالتك</label>
+                        <textarea placeholder="اكتب رسالتك هنا..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> إرسال الرسالة
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="social">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>
+                &copy; 2024 <span class="brand">M.Al-Hanani</span>. جميع الحقوق محفوظة
+            </p>
+        </div>
+    </footer>
+
+    <!-- ===== SCRIPT ===== -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ============================================
-            //  بيانات اللقطات حسب الطلب
-            // ============================================
-            const scenesData = [
-                {
-                    title: '🎬 المشهد الافتتاحي',
-                    desc: 'من 0 إلى 3 ثواني - مقدمة الفيديو',
-                    startTime: 0,
-                    endTime: 3,
-                    hint: '⬇️ مرر للأسفل ⬇️'
-                },
-                {
-                    title: '✨ المشهد الثاني',
-                    desc: 'من 3 إلى 4 ثواني - لحظة سريعة',
-                    startTime: 3,
-                    endTime: 4,
-                    hint: '✨ استمر بالتمرير'
-                },
-                {
-                    title: '🌌 المشهد الثالث',
-                    desc: 'من 6 إلى 7 ثواني - مشهد ديناميكي',
-                    startTime: 6,
-                    endTime: 7,
-                    hint: '🚀 تابع التمرير'
-                },
-                {
-                    title: '🎯 المشهد الرابع',
-                    desc: 'من 9 إلى 10 ثواني - ذروة المشهد',
-                    startTime: 9,
-                    endTime: 10,
-                    hint: '🎯 استمر'
-                },
-                {
-                    title: '🌟 المشهد الخامس',
-                    desc: 'نهاية الرحلة - ختام مميز',
-                    startTime: 10,
-                    endTime: 11,
-                    hint: '🌟 نهاية الرحلة'
-                }
-            ];
+            // ===== Hamburger Menu =====
+            const hamburger = document.getElementById('hamburger');
+            const navLinks = document.getElementById('navLinks');
 
-            // ============================================
-            //  عناصر DOM
-            // ============================================
-            const video = document.getElementById('bg-video');
-            const progressBar = document.getElementById('progressBar');
-            const scenesProgress = document.getElementById('scenesProgress');
-            const content = document.querySelector('.content');
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            const timeDisplay = document.getElementById('timeDisplay');
-            const currentTimeText = document.getElementById('currentTimeText');
-            const sceneEndNotification = document.getElementById('sceneEndNotification');
-            const speedIndicator = document.getElementById('speedIndicator');
-
-            // ============================================
-            //  متغيرات التحكم
-            // ============================================
-            let currentSceneIndex = 0;
-            let totalScenes = scenesData.length;
-            let isScrolling = false;
-            let scrollTimeout = null;
-            let isVideoPlaying = false;
-            let lastScrollY = window.scrollY;
-            let currentVideoTime = 0;
-            let isSlowMode = false;
-            let originalPlaybackRate = 1.0;
-            const slowModeDuration = 2;
-            let isSceneEnded = false;
-            let sceneEndTimeout = null;
-            let isLooping = false;
-
-            // ============================================
-            //  إنشاء الأقسام ونقاط التقدم
-            // ============================================
-            function createSections() {
-                scenesData.forEach((scene, index) => {
-                    const section = document.createElement('section');
-                    section.className = 'section';
-                    section.dataset.scene = index;
-                    
-                    const sceneNumber = document.createElement('div');
-                    sceneNumber.className = 'scene-number';
-                    sceneNumber.textContent = `لقطة ${index + 1}/${totalScenes}`;
-                    section.appendChild(sceneNumber);
-                    
-                    const h2 = document.createElement('h2');
-                    h2.textContent = scene.title;
-                    section.appendChild(h2);
-                    
-                    const p = document.createElement('p');
-                    p.textContent = scene.desc;
-                    section.appendChild(p);
-                    
-                    const timeRange = document.createElement('div');
-                    timeRange.className = 'time-range';
-                    timeRange.textContent = `⏱ ${scene.startTime.toFixed(1)}ث - ${scene.endTime.toFixed(1)}ث`;
-                    section.appendChild(timeRange);
-                    
-                    if (index < totalScenes - 1) {
-                        const hint = document.createElement('div');
-                        hint.className = 'scroll-hint';
-                        hint.textContent = scene.hint || '⬇️ مرر للأسفل ⬇️';
-                        section.appendChild(hint);
-                    } else {
-                        const endHint = document.createElement('div');
-                        endHint.className = 'scroll-hint';
-                        endHint.textContent = '🏁 نهاية الرحلة';
-                        section.appendChild(endHint);
-                    }
-                    
-                    content.appendChild(section);
-                    
-                    const dot = document.createElement('div');
-                    dot.className = 'scene-dot';
-                    dot.dataset.index = index;
-                    dot.title = `${scene.title} (${scene.startTime.toFixed(1)}-${scene.endTime.toFixed(1)}ث)`;
-                    dot.addEventListener('click', () => {
-                        goToScene(index);
-                    });
-                    scenesProgress.appendChild(dot);
-                });
-            }
-
-            // ============================================
-            //  الانتقال إلى لقطة محددة
-            // ============================================
-            function goToScene(index) {
-                if (index < 0) index = 0;
-                if (index >= totalScenes) index = totalScenes - 1;
-                
-                currentSceneIndex = index;
-                const scene = scenesData[index];
-                isSceneEnded = false;
-                isLooping = false;
-                
-                sceneEndNotification.classList.remove('show');
-                
-                const progress = (index / (totalScenes - 1)) * 100;
-                progressBar.style.width = progress + '%';
-                
-                const dots = document.querySelectorAll('.scene-dot');
-                dots.forEach((dot, i) => {
-                    dot.classList.remove('active', 'visited');
-                    if (i === index) {
-                        dot.classList.add('active');
-                    } else if (i < index) {
-                        dot.classList.add('visited');
-                    }
-                });
-                
-                const sections = document.querySelectorAll('.section');
-                sections.forEach((section, i) => {
-                    section.classList.toggle('active', i === index);
-                });
-                
-                if (video.duration && scene.startTime < video.duration) {
-                    video.currentTime = scene.startTime;
-                    currentVideoTime = scene.startTime;
-                    updateTimeDisplay(scene.startTime);
-                    
-                    playVideoVerySlowFrom(scene.startTime);
-                }
-            }
-
-            // ============================================
-            //  تشغيل الفيديو بسرعة بطيئة جداً (0.15x)
-            // ============================================
-            function playVideoVerySlowFrom(time) {
-                if (time < 0) time = 0;
-                if (time > video.duration) time = video.duration;
-
-                video.currentTime = time;
-                currentVideoTime = time;
-                updateTimeDisplay(time);
-
-                originalPlaybackRate = video.playbackRate || 1.0;
-                
-                // ✅ سرعة بطيئة جداً: 0.15 من السرعة الطبيعية
-                const verySlowRate = 0.15;
-                video.playbackRate = verySlowRate;
-
-                // إظهار مؤشر السرعة
-                speedIndicator.textContent = `🐢 سرعة ${verySlowRate.toFixed(2)}x`;
-                speedIndicator.classList.add('visible');
-
-                video.play().then(() => {
-                    isVideoPlaying = true;
-                    isSlowMode = true;
-                    isLooping = false;
-                    
-                    statusDot.className = 'status-dot slow';
-                    statusText.textContent = '🐢 تشغيل بطيء جداً';
-
-                    // بعد ثانيتين، نعود للسرعة الطبيعية
-                    setTimeout(() => {
-                        if (isVideoPlaying && isSlowMode) {
-                            video.playbackRate = originalPlaybackRate;
-                            isSlowMode = false;
-                            statusDot.className = 'status-dot';
-                            statusText.textContent = '▶ تشغيل تلقائي';
-                            speedIndicator.classList.remove('visible');
-                        }
-                    }, slowModeDuration * 1000);
-
-                }).catch(err => {
-                    console.warn('لا يمكن تشغيل الفيديو:', err);
-                });
-            }
-
-            // ============================================
-            //  تحديث عرض الوقت
-            // ============================================
-            function updateTimeDisplay(time) {
-                const minutes = Math.floor(time / 60);
-                const seconds = Math.floor(time % 60);
-                currentTimeText.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                timeDisplay.classList.add('visible');
-                clearTimeout(window.timeDisplayTimeout);
-                window.timeDisplayTimeout = setTimeout(() => {
-                    timeDisplay.classList.remove('visible');
-                }, 3000);
-            }
-
-            // ============================================
-            //  إيقاف الفيديو
-            // ============================================
-            function pauseVideo() {
-                if (isVideoPlaying) {
-                    currentVideoTime = video.currentTime;
-                    video.pause();
-                    isVideoPlaying = false;
-                    isSlowMode = false;
-                    isLooping = false;
-                    video.playbackRate = originalPlaybackRate;
-                    statusDot.className = 'status-dot paused';
-                    statusText.textContent = `⏸ توقف عند ${currentVideoTime.toFixed(1)}ث`;
-                    updateTimeDisplay(currentVideoTime);
-                    speedIndicator.classList.remove('visible');
-                }
-            }
-
-            // ============================================
-            //  مراقبة الفيديو - إعادة تشغيل اللقطة عند انتهائها
-            // ============================================
-            video.addEventListener('timeupdate', function() {
-                if (isVideoPlaying && !video.paused) {
-                    currentVideoTime = video.currentTime;
-                    
-                    if (video.duration) {
-                        const progress = (video.currentTime / video.duration) * 100;
-                        progressBar.style.width = Math.min(progress, 100) + '%';
-                    }
-                    
-                    const currentScene = scenesData[currentSceneIndex];
-                    if (currentScene) {
-                        if (video.currentTime >= currentScene.endTime) {
-                            if (!isLooping) {
-                                isLooping = true;
-                                isSceneEnded = true;
-                                
-                                sceneEndNotification.classList.add('show');
-                                sceneEndNotification.textContent = '🔄 إعادة تشغيل اللقطة';
-                                
-                                setTimeout(() => {
-                                    if (isVideoPlaying) {
-                                        video.currentTime = currentScene.startTime;
-                                        currentVideoTime = currentScene.startTime;
-                                        updateTimeDisplay(currentScene.startTime);
-                                        isLooping = false;
-                                        isSceneEnded = false;
-                                        
-                                        sceneEndNotification.classList.remove('show');
-                                        
-                                        video.play().catch(err => console.warn('خطأ في إعادة التشغيل:', err));
-                                    }
-                                }, 300);
-                            }
-                        }
-                    }
-                }
+            hamburger.addEventListener('click', function() {
+                navLinks.classList.toggle('open');
             });
 
-            // ============================================
-            //  معالجة التمرير
-            // ============================================
+            // Close menu on link click
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('open');
+                });
+            });
+
+            // ===== Smooth Scroll =====
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // ===== Header Shadow on Scroll =====
+            const header = document.getElementById('header');
             window.addEventListener('scroll', function() {
-                const currentScrollY = window.scrollY;
-                const scrollDelta = Math.abs(currentScrollY - lastScrollY);
-
-                if (scrollDelta > 3) {
-                    isScrolling = true;
-
-                    if (isVideoPlaying) {
-                        pauseVideo();
-                    }
-
-                    updateSceneFromScroll(currentScrollY);
-
-                    clearTimeout(scrollTimeout);
-                    scrollTimeout = setTimeout(() => {
-                        isScrolling = false;
-                        
-                        if (video.duration && currentSceneIndex < scenesData.length) {
-                            const scene = scenesData[currentSceneIndex];
-                            if (scene.startTime < video.duration) {
-                                isLooping = false;
-                                isSceneEnded = false;
-                                sceneEndNotification.classList.remove('show');
-                                playVideoVerySlowFrom(scene.startTime);
-                            }
-                        }
-                    }, 400);
+                if (window.scrollY > 50) {
+                    header.style.boxShadow = '0 4px 30px rgba(0,0,0,0.3)';
+                } else {
+                    header.style.boxShadow = 'none';
                 }
-
-                lastScrollY = currentScrollY;
             });
 
-            // ============================================
-            //  تحديث اللقطة بناءً على التمرير
-            // ============================================
-            function updateSceneFromScroll(scrollY) {
-                const sections = document.querySelectorAll('.section');
-                let activeIndex = 0;
-                
-                sections.forEach((section, index) => {
-                    const rect = section.getBoundingClientRect();
-                    const isActive = rect.top <= window.innerHeight * 0.5 && rect.bottom >= window.innerHeight * 0.3;
-                    
-                    if (isActive) {
-                        activeIndex = index;
+            // ===== Contact Form =====
+            const contactForm = document.getElementById('contactForm');
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('.btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال!';
+                    btn.style.background = 'linear-gradient(135deg, #00ff88, #00b894)';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = '';
+                        btn.disabled = false;
+                        this.reset();
+                    }, 2000);
+                }, 1500);
+            });
+
+            // ===== Intersection Observer for Animations =====
+            const sections = document.querySelectorAll('.section-title, .about-grid, .resume-grid, .services-grid, .testimonials-grid, .portfolio-grid, .contact-grid');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
                     }
                 });
-                
-                if (activeIndex !== currentSceneIndex) {
-                    currentSceneIndex = activeIndex;
-                    
-                    sections.forEach((section, i) => {
-                        section.classList.toggle('active', i === activeIndex);
-                    });
-                    
-                    const dots = document.querySelectorAll('.scene-dot');
-                    dots.forEach((dot, i) => {
-                        dot.classList.remove('active');
-                        if (i === activeIndex) {
-                            dot.classList.add('active');
-                        } else if (i < activeIndex) {
-                            dot.classList.add('visited');
-                        }
-                    });
-                    
-                    const progress = (activeIndex / (totalScenes - 1)) * 100;
-                    progressBar.style.width = progress + '%';
-                    
-                    isLooping = false;
-                    isSceneEnded = false;
-                    sceneEndNotification.classList.remove('show');
-                }
-            }
+            }, { threshold: 0.1 });
 
-            // ============================================
-            //  تهيئة الفيديو
-            // ============================================
-            video.addEventListener('loadedmetadata', function() {
-                console.log('✅ الفيديو جاهز، الطول:', video.duration, 'ثانية');
-                originalPlaybackRate = video.playbackRate || 1.0;
-                currentVideoTime = 0;
-                
-                createSections();
-                
-                setTimeout(() => {
-                    goToScene(0);
-                }, 500);
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                observer.observe(section);
             });
 
-            // ============================================
-            //  أحداث إضافية
-            // ============================================
-            window.addEventListener('resize', function() {
-                updateSceneFromScroll(window.scrollY);
-            });
-
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden && !isScrolling) {
-                    const scene = scenesData[currentSceneIndex];
-                    if (scene && !isSceneEnded) {
-                        if (isSlowMode) {
-                            playVideoVerySlowFrom(currentVideoTime);
-                        } else {
-                            playVideoVerySlowFrom(scene.startTime);
-                        }
-                    }
-                }
-            });
-
-            video.addEventListener('error', function(e) {
-                console.error('خطأ في الفيديو:', e);
-                statusText.textContent = '⚠ خطأ في الفيديو';
-                statusDot.className = 'status-dot paused';
-            });
-
-            console.log('✅ تم تهيئة الفيديو مع تشغيل بطيء جداً (0.15x)');
-            console.log('📌 اللقطات المحددة:');
-            scenesData.forEach((scene, i) => {
-                console.log(`  لقطة ${i + 1}: ${scene.startTime}ث - ${scene.endTime}ث`);
-            });
-            console.log('🔄 عند انتهاء كل لقطة، تعيد التشغيل من البداية تلقائياً');
-            console.log('🐢 سرعة التشغيل البطيء: 0.15x (بطيء جداً)');
+            console.log('🚀 موقع محمد الحناني - Full-Stack Developer');
+            console.log('📱 تم التطوير باستخدام HTML, CSS, JavaScript');
         });
     </script>
 
