@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>فيديو تفاعلي - تراجع ثانيتين</title>
+    <title>فيديو تفاعلي - تشغيل بطيء لمدة 2 ثانية</title>
     
     <!-- مكتبة scrolly-video -->
     <script src="https://cdn.jsdelivr.net/npm/scrolly-video@latest/dist/scrolly-video.js"></script>
@@ -253,9 +253,14 @@
             animation: none;
         }
 
-        .status-dot.rewind {
+        .status-dot.slow {
             background: #ffd93d;
-            animation: blink 0.5s infinite;
+            animation: pulse-slow 1s infinite;
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
         }
 
         @keyframes blink {
@@ -263,18 +268,18 @@
             50% { opacity: 0.3; }
         }
 
-        /* ===== إشعار التراجع ===== */
-        .rewind-notification {
+        /* ===== إشعار التشغيل البطيء ===== */
+        .slow-notification {
             position: fixed;
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%) scale(0.8);
             z-index: 100;
-            background: rgba(255, 215, 0, 0.15);
+            background: rgba(255, 215, 0, 0.12);
             backdrop-filter: blur(12px);
-            padding: 8px 22px;
+            padding: 8px 24px;
             border-radius: 40px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.25);
             font-size: 0.9rem;
             color: #ffd93d;
             opacity: 0;
@@ -282,11 +287,11 @@
             pointer-events: none;
             white-space: nowrap;
             font-weight: 500;
-            letter-spacing: 1px;
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.1);
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.05);
         }
 
-        .rewind-notification.show {
+        .slow-notification.show {
             opacity: 1;
             transform: translateX(-50%) scale(1);
         }
@@ -347,9 +352,9 @@
                 font-size: 0.7rem;
                 padding: 4px 12px;
             }
-            .rewind-notification {
+            .slow-notification {
                 font-size: 0.7rem;
-                padding: 5px 14px;
+                padding: 5px 16px;
                 bottom: 65px;
             }
         }
@@ -371,23 +376,23 @@
     <div class="content">
         <section class="section" data-scene="0">
             <h2>🎬 <span class="float-word">فيديو</span> <span class="highlight-word">تفاعلي</span></h2>
-            <p>تمرير للتحكم — عند التوقف <span class="typing-text">يعود 2 ثانية</span> ويستمر</p>
+            <p>عند التوقف <span class="typing-text">يعود 2 ثانية</span> بتشغيل بطيء وسلس</p>
             <div class="scroll-hint">⬇️ مرر للأسفل ⬇️</div>
         </section>
 
         <section class="section" data-scene="1">
-            <h2>✨ <span class="highlight-word">تراجع</span> <span class="float-word">ذكي</span></h2>
-            <p>كل توقف يعيد <span class="highlight-word">ثانيتين</span> لرؤية المشهد بوضوح</p>
+            <h2>✨ <span class="highlight-word">تشغيل</span> <span class="float-word">بطيء</span></h2>
+            <p>لمدة <span class="highlight-word">ثانيتين</span> بسرعة منخفضة ثم يعود للسرعة الطبيعية</p>
         </section>
 
         <section class="section" data-scene="2">
             <h2>🌌 <span class="float-word">تجربة</span> <span class="highlight-word">سلسة</span></h2>
-            <p>يتوقف التمرير؟ <span class="typing-text">يعود للخلف قليلاً</span> ثم يواصل التشغيل</p>
+            <p>يتوقف التمرير؟ <span class="typing-text">يشغل ببطء</span> لمشاهدة التفاصيل بدقة</p>
         </section>
 
         <section class="section" data-scene="3">
-            <h2>🚀 <span class="highlight-word">تحكم</span> <span class="float-word">دقيق</span></h2>
-            <p><span class="highlight-word">ثانيتان</span> فقط للتراجع — لا تفوت أي تفصيل</p>
+            <h2>🚀 <span class="highlight-word">تحكم</span> <span class="float-word">مرن</span></h2>
+            <p>سرعة بطيئة لمدة <span class="highlight-word">ثانيتين</span> ثم تشغيل طبيعي</p>
         </section>
 
         <section class="section" data-scene="4">
@@ -396,7 +401,7 @@
         </section>
 
         <div class="footer">
-            <span>🔄 تمرير + تراجع 2 ثانية عند التوقف</span>
+            <span>🔄 تمرير + تشغيل بطيء لمدة 2 ثانية عند التوقف</span>
         </div>
     </div>
 
@@ -406,8 +411,8 @@
         <span id="statusText">تشغيل تلقائي</span>
     </div>
 
-    <!-- إشعار التراجع -->
-    <div class="rewind-notification" id="rewindNotification">⏪ عاد 2 ثانية</div>
+    <!-- إشعار التشغيل البطيء -->
+    <div class="slow-notification" id="slowNotification">🐢 تشغيل بطيء لمدة 2 ثانية</div>
 
     <!-- عرض الوقت -->
     <div class="time-display" id="timeDisplay">
@@ -423,7 +428,7 @@
             const statusText = document.getElementById('statusText');
             const timeDisplay = document.getElementById('timeDisplay');
             const currentTimeText = document.getElementById('currentTimeText');
-            const rewindNotification = document.getElementById('rewindNotification');
+            const slowNotification = document.getElementById('slowNotification');
 
             // ============================================
             //  متغيرات التحكم
@@ -433,17 +438,20 @@
             let isVideoPlaying = false;
             let lastScrollY = window.scrollY;
             let currentVideoTime = 0;
-            let isRewinding = false;
+            let isSlowMode = false;
+            let slowModeStartTime = 0;
+            let originalPlaybackRate = 1.0;
+            let slowModeDuration = 2; // ثانيتين
 
             // ============================================
-            //  إظهار إشعار التراجع
+            //  إظهار إشعار التشغيل البطيء
             // ============================================
-            function showRewindNotification() {
-                rewindNotification.classList.add('show');
-                clearTimeout(window.rewindTimeout);
-                window.rewindTimeout = setTimeout(() => {
-                    rewindNotification.classList.remove('show');
-                }, 1200);
+            function showSlowNotification() {
+                slowNotification.classList.add('show');
+                clearTimeout(window.slowTimeout);
+                window.slowTimeout = setTimeout(() => {
+                    slowNotification.classList.remove('show');
+                }, 2500);
             }
 
             // ============================================
@@ -461,9 +469,59 @@
             }
 
             // ============================================
-            //  تشغيل الفيديو من نقطة محددة
+            //  تشغيل الفيديو من نقطة محددة مع سرعة بطيئة
             // ============================================
-            function playVideoFrom(time) {
+            function playVideoSlowFrom(time) {
+                if (time < 0) time = 0;
+                if (time > video.duration) time = video.duration;
+
+                // تعيين الوقت
+                video.currentTime = time;
+                currentVideoTime = time;
+                updateTimeDisplay(time);
+
+                // حفظ السرعة الأصلية
+                originalPlaybackRate = video.playbackRate || 1.0;
+
+                // تعيين سرعة بطيئة (0.3 - 0.4 من السرعة الطبيعية)
+                const slowRate = 0.35;
+                video.playbackRate = slowRate;
+
+                // تشغيل الفيديو
+                video.play().then(() => {
+                    isVideoPlaying = true;
+                    isSlowMode = true;
+                    slowModeStartTime = time;
+                    
+                    statusDot.className = 'status-dot slow';
+                    statusText.textContent = '🐢 تشغيل بطيء';
+
+                    // إظهار الإشعار
+                    showSlowNotification();
+
+                    console.log(`🐢 تشغيل بطيء من ${time.toFixed(2)} ثانية بسرعة ${slowRate}`);
+
+                    // بعد ثانيتين، نعيد السرعة الطبيعية
+                    setTimeout(() => {
+                        if (isVideoPlaying && isSlowMode) {
+                            // إعادة السرعة الطبيعية
+                            video.playbackRate = originalPlaybackRate;
+                            isSlowMode = false;
+                            statusDot.className = 'status-dot';
+                            statusText.textContent = '▶ تشغيل تلقائي';
+                            console.log('✅ عاد للسرعة الطبيعية');
+                        }
+                    }, slowModeDuration * 1000); // 2 ثانية
+
+                }).catch(err => {
+                    console.warn('لا يمكن تشغيل الفيديو:', err);
+                });
+            }
+
+            // ============================================
+            //  تشغيل الفيديو بشكل عادي
+            // ============================================
+            function playVideoNormal(time) {
                 if (time < 0) time = 0;
                 if (time > video.duration) time = video.duration;
 
@@ -471,11 +529,16 @@
                 currentVideoTime = time;
                 updateTimeDisplay(time);
 
+                // إعادة السرعة الطبيعية إذا كانت بطيئة
+                if (isSlowMode) {
+                    video.playbackRate = originalPlaybackRate;
+                    isSlowMode = false;
+                }
+
                 video.play().then(() => {
                     isVideoPlaying = true;
                     statusDot.className = 'status-dot';
                     statusText.textContent = '▶ تشغيل تلقائي';
-                    isRewinding = false;
                 }).catch(err => {
                     console.warn('لا يمكن تشغيل الفيديو:', err);
                 });
@@ -489,6 +552,9 @@
                     currentVideoTime = video.currentTime;
                     video.pause();
                     isVideoPlaying = false;
+                    isSlowMode = false;
+                    // إعادة السرعة الطبيعية
+                    video.playbackRate = originalPlaybackRate;
                     statusDot.className = 'status-dot paused';
                     statusText.textContent = `⏸ توقف عند ${currentVideoTime.toFixed(1)}ث`;
                     updateTimeDisplay(currentVideoTime);
@@ -497,7 +563,7 @@
 
             // ============================================
             //  الوظيفة الرئيسية: عند توقف التمرير
-            //  يتم التراجع ثانيتين ثم التشغيل
+            //  يتم التراجع ثانيتين ثم تشغيل بطيء لمدة ثانيتين
             // ============================================
             function handleScrollStop() {
                 if (!video.duration) return;
@@ -505,28 +571,20 @@
                 // حفظ النقطة الحالية
                 const currentTime = video.currentTime;
 
-                // حساب النقطة الجديدة (ناقص 2 ثانية)
+                // التراجع ثانيتين
                 let newTime = currentTime - 2;
 
                 // التأكد من عدم الذهاب لوقت سالب
                 if (newTime < 0) newTime = 0;
 
-                // إذا كان الفرق أقل من 0.5 ثانية، لا حاجة للتراجع
+                // إذا كان الفرق أقل من 0.5 ثانية، تشغيل عادي
                 if (Math.abs(currentTime - newTime) < 0.3) {
-                    playVideoFrom(currentTime);
+                    playVideoNormal(currentTime);
                     return;
                 }
 
-                // إظهار إشعار التراجع
-                showRewindNotification();
-
-                // تغيير حالة المؤشر
-                statusDot.className = 'status-dot rewind';
-                statusText.textContent = `⏪ تراجع ${(currentTime - newTime).toFixed(1)}ث`;
-
-                // تشغيل الفيديو من النقطة الجديدة
-                isRewinding = true;
-                playVideoFrom(newTime);
+                // تشغيل بطيء من النقطة الجديدة
+                playVideoSlowFrom(newTime);
             }
 
             // ============================================
@@ -556,7 +614,7 @@
                     scrollTimeout = setTimeout(() => {
                         isScrolling = false;
 
-                        // ✅ هنا يتم تنفيذ التراجع 2 ثانية عند توقف التمرير
+                        // ✅ عند توقف التمرير: تراجع 2 ثانية + تشغيل بطيء لمدة 2 ثانية
                         handleScrollStop();
 
                     }, 400); // 400ms = وقت التوقف
@@ -579,7 +637,7 @@
                         const totalScenes = sections.length;
                         const progress = index / (totalScenes - 1);
 
-                        if (video.duration && !isRewinding) {
+                        if (video.duration && !isSlowMode) {
                             const targetTime = progress * video.duration;
                             if (Math.abs(video.currentTime - targetTime) > 0.3) {
                                 video.currentTime = targetTime;
@@ -632,10 +690,11 @@
             // ============================================
             video.addEventListener('loadedmetadata', function() {
                 console.log('✅ الفيديو جاهز، الطول:', video.duration, 'ثانية');
+                originalPlaybackRate = video.playbackRate || 1.0;
                 currentVideoTime = 0;
 
                 setTimeout(() => {
-                    playVideoFrom(0);
+                    playVideoNormal(0);
                 }, 800);
             });
 
@@ -648,13 +707,21 @@
 
             document.addEventListener('visibilitychange', function() {
                 if (!document.hidden && !isScrolling) {
-                    playVideoFrom(currentVideoTime);
+                    if (isSlowMode) {
+                        playVideoSlowFrom(currentVideoTime);
+                    } else {
+                        playVideoNormal(currentVideoTime);
+                    }
                 }
             });
 
             video.addEventListener('ended', function() {
                 if (isVideoPlaying) {
-                    playVideoFrom(0);
+                    if (isSlowMode) {
+                        playVideoSlowFrom(0);
+                    } else {
+                        playVideoNormal(0);
+                    }
                 }
             });
 
@@ -665,7 +732,7 @@
             });
 
             console.log('✅ تم تهيئة الفيديو التفاعلي بنجاح');
-            console.log('📌 عند توقف التمرير → يعود 2 ثانية → يشغل تلقائياً');
+            console.log('📌 عند توقف التمرير: تراجع 2 ثانية + تشغيل بطيء لمدة 2 ثانية');
         });
     </script>
 
